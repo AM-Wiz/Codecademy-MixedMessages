@@ -1,0 +1,20 @@
+[
+    { "first": "mysterious", "second": "mysterious", "wgt": 2 },
+    { "first": "mysterious", "second": "ominous", "wgt": 1.5 },
+    { "first": "mysterious", "second": "hopeful", "wgt": 0.6 },
+    { "first": "mysterious", "second": "excited", "wgt": 0.8 },
+
+    { "first": "ominous", "second": "ominous", "wgt": 2 },
+    { "first": "ominous", "second": "melancholy", "wgt": 1.5 },
+    { "first": "ominous", "second": "hopeful", "wgt": 0.1 },
+    { "first": "ominous", "second": "excited", "wgt": 0.2 },
+
+    { "first": "melancholy", "second": "melancholy", "wgt": 2 },
+    { "first": "melancholy", "second": "hopeful", "wgt": 0.5 },
+    { "first": "melancholy", "second": "excited", "wgt": 0.1 },
+
+    { "first": "hopeful", "second": "hopeful", "wgt": 2 },
+    { "first": "hopeful", "second": "excited", "wgt": 1.5 },
+    
+    { "first": "excited", "second": "excited", "wgt": 2 }
+]

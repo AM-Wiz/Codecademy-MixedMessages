@@ -1,0 +1,48 @@
+[
+    {
+        "msg": "Beware of the clouds.",
+        "tone": ["ominous", "mysterious"]
+    },
+    {
+        "msg": "Stay away from railway tracks.",
+        "tone": ["ominous"]
+    },
+    {
+        "msg": "Dog is man's best friend, but not yours.",
+        "tone": ["ominous"]
+    },
+    {
+        "msg": "Behind you!",
+        "wgt": 0.3,
+        "tone": ["ominous"]
+    },
+    {
+        "msg": "The moon will pass through an odd phase.",
+        "tone": ["ominous", "mysterious"]
+    },
+    {
+        "msg": "Do not trust the man with brown eyes.",
+        "tone": ["ominous", "mysterious"]
+    },
+    {
+        "msg": "The tides will ebb as surely as they flow.",
+        "tone": ["hopeful", "melancholy", "mysterious"]
+    },
+    {
+        "msg": "The tides will flow as surely as they ebb.",
+        "tone": ["hopeful", "melancholy", "mysterious"]
+    },
+    {
+        "msg": "Fear not the fall, for it must inevitably end in a landing.",
+        "tone": ["hopeful", "melancholy", "mysterious"]
+    },
+    {
+        "msg": "Why wait for heaven?",
+        "wgt":0.3,
+        "tone": ["mysterious"]
+    },
+    {
+        "msg": "Why wait for tomorrow when you already have today?",
+        "tone": ["hopeful"]
+    }
+]

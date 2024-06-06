@@ -1,0 +1,55 @@
+[
+    {
+        "msg": "Rolling dice... 🎲🎲"
+    },
+    {
+        "msg": "Oh you're in for it now...",
+        "tone": "ominous",
+        "wgt": 0.1
+    },
+    {
+        "msg": "Do you have good life insurance?",
+        "tone": "ominous",
+        "wgt": 0.2
+    },
+    {
+        "msg": "Feeling lucky?",
+        "tone": ["hopeful", "excited"],
+        "wgt": 0.4
+    },
+    {
+        "msg": "This is the one 🙏🏿",
+        "tone": "hopeful",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Casting chicken bones...",
+        "tone": "mysterious",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Studying the heavens...",
+        "tone": "mysterious",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Scrying the stars... ⭐",
+        "tone": "mysterious",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Watching the winds... 💨",
+        "tone": "mysterious",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Tracing drops of rain... 🌧",
+        "tone": "mysterious",
+        "wgt": 0.3
+    },
+    {
+        "msg": "Counting lucky stars... ✨",
+        "tone": "hopeful",
+        "wgt": 0.3
+    }
+]

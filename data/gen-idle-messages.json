@@ -1,0 +1,52 @@
+[
+    {
+        "msg": "I hope you will be able to live with yourself...",
+        "tone": ["melancholy", "ominous"],
+        "wgt": 0.2,
+        "before": true, "after": true
+    },
+    {
+        "msg": "Was it worth it?",
+        "tone": ["melancholy", "ominous"],
+        "wgt": 0.5,
+        "after": true
+    },
+    {
+        "msg": "Maybe your luck will fare better this time?",
+        "tone": "melancholy",
+        "wgt": 0.5,
+        "after": true
+    },
+    {
+        "msg": "Try your luck!",
+        "tone": "excited",
+        "before": true
+    },
+    {
+        "msg": "Try your luck again!",
+        "tone": "excited",
+        "after": true
+    },
+    {
+        "msg": "What could possibly go wrong?",
+        "tone": ["excited", "hopeful"],
+        "before": true
+    },
+    {
+        "msg": "What else could possibly go wrong?",
+        "tone": ["melancholy"],
+        "after": true
+    },
+    {
+        "msg": "What could pawssibly go wrong?",
+        "tone": ["excited", "hopeful"],
+        "wgt": 0.1,
+        "before": true
+    },
+    {
+        "msg": "What else could pawssibly go wrong?",
+        "tone": ["melancholy"],
+        "wgt": 0.1,
+        "after": true
+    }
+]
