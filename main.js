@@ -1,4 +1,5 @@
-import { delay } from './modules/utilities.js';
+import { delay, getElementPosition, RepeatingFunction } from './modules/utilities.js';
+import { randVec, Vec, vecMul } from './modules/vectors.js';
 
 const button = document.querySelector('#btn-gen-message');
 if (button == null)
@@ -7,6 +8,38 @@ if (button == null)
 const messageField = document.querySelector('#message-field');
 if (messageField == null)
     throw Error('Missing message field');
+
+
+import { Particle, ParticleContext, ParticleAnchor, ParticleSlowEffect, simulateFrame as simParticleFrame } from './modules/Particle.js';
+
+const particleFrame = document.querySelector('#particle-frame');
+const particleContext = new ParticleContext(particleFrame);
+
+const pFrequency = 30;
+const particleHandler = new RepeatingFunction(() => {
+
+    simParticleFrame(particleContext, 1.0 / pFrequency);
+
+    //console.log('In handler');
+}, 1.0 / pFrequency);
+
+particleHandler.start();
+
+const buttonAnchor = new ParticleAnchor(button, null);
+const particleSlowEffect = new ParticleSlowEffect(0.01);
+const particleAdder = new RepeatingFunction(() => {
+    for (let i = 0; i < 20; i++) {
+        const np = new Particle("?", Vec(2), 5, buttonAnchor);
+        np.addEffect(particleSlowEffect);
+
+        np.velocity = vecMul(randVec(Vec(2)), 200);
+        particleContext.addParticle(np);
+    }
+}, 3);
+
+particleAdder.start();
+
+
 
 
 import Messages from './messages.js'
@@ -61,3 +94,9 @@ button.addEventListener('click', async (e) => {
 
     button.innerHTML = genMsg.msg;
 }
+
+
+
+
+console.log(getElementPosition(particleFrame));
+console.log(getElementPosition(button));
