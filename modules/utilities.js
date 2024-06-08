@@ -9,6 +9,16 @@ export function delay(ms) {
 }
 
 
+export function fract(a) {
+    a %= 1;
+    if (a < 0)
+        a += 1;
+    return a;
+}
+
+
+
+
 export class RepeatingFunction {
     constructor(method, period) {
         this._method = method;

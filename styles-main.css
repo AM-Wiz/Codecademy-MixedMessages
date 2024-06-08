@@ -77,6 +77,7 @@ hr.container-div {
 #overlay {
     display: block;
     pointer-events: none;
+    overflow: hidden;
 }
 
 #particle-frame-bgd {

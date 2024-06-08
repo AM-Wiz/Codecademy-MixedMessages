@@ -25,6 +25,7 @@ export class ParticleContext {
         this.newParticles = [];
         this.dyingParticles = [];
         this._timeStep = 1.0 / 30;
+        this._time = 0;
         this._state = CStates.idle;
     }
 
@@ -42,6 +43,10 @@ export class ParticleContext {
 
         particle.state = PStates.disposing;
         this.dyingParticles.push(particle);
+    }
+
+    get time() {
+        return this._time;
     }
 
     get timeStep() {

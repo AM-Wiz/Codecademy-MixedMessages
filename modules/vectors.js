@@ -1,10 +1,17 @@
+import { fract } from "./utilities.js";
 
-export function Vec(sz) {
-    const v = [];
-    for (let i = 0; i < sz; i++)
-        v.push(0);
 
-    return v;
+export function Vec(x) {
+    if (typeof x === 'number') {
+        const v = [];
+        for (let i = 0; i < x; i++)
+            v.push(0);
+        return v;
+    } else if (Array.isArray(x)) {
+        return x;
+    } else {
+        throw Error(`Invalid input ${x} to Vec constructor`);
+    }
 }
 
 
@@ -104,11 +111,28 @@ export function vecDiv(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] / b[i];
     } else
-        throw Error('Invalid input to vector multiply');
+        throw Error('Invalid input to vector divide');
     
     return dst;
 }
 
+export function vecMod(a, b, dst=undefined) {
+    dst ??= Vec(a['length'] ?? b['length']);
+
+    if (typeof a === 'number' && Array.isArray(b)) {
+        for (let i = 0; i < dst.length; i++)
+            dst[i] = a % b[i];
+    } else if (Array.isArray(a) && typeof b === 'number') {
+        for (let i = 0; i < dst.length; i++)
+            dst[i] = a[i] % b;
+    } else if (Array.isArray(a) && Array.isArray(b)) {
+        for (let i = 0; i < dst.length; i++)
+            dst[i] = a[i] % b[i];
+    } else
+        throw Error('Invalid input to vector modulo');
+    
+    return dst;
+}
 
 export function vecDot(a, b) {
     let acc = 0;
@@ -136,8 +160,43 @@ export function vecNorm(a, dst = undefined) {
     return dst;
 }
 
+export function vecFloor(a, dst = undefined) {
+    dst ??= Vec(a.length);
 
-export function vecApply(a, func, dst = undefined) {
+    for (let i = 0; i < dst.length; i++)
+        dst[i] = Math.floor(a[i]);
+
+    return dst;
+}
+
+export function vecFract(a, dst = undefined) {
+    dst ??= Vec(a.length);
+
+    for (let i = 0; i < dst.length; i++)
+        dst[i] = fract(a[i]);
+
+    return dst;
+}
+
+export function vecLerp(a, b, x, dst=undefined) {
+    dst ??= Vec(a['length'] ?? b['length']);
+
+    if (typeof x === 'number') {
+        const mx = 1 - x;
+        for (let i = 0; i < dst.length; i++)
+            dst[i] = a[i] * mx + b[i] * x;
+    } else if (Array.isArray(x)) {
+        for (let i = 0; i < dst.length; i++)
+            dst[i] = a[i] * (1 - x) + b[i] * x;
+    } else
+        throw Error('Invalid input to vector modulo');
+    
+    return dst;
+}
+
+
+
+export function vecApply0(a, func, dst = undefined) {
     dst ??= Vec(a.length);
 
     for (let i = 0; i < a.length; i++)

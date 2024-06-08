@@ -1,6 +1,6 @@
 import { Particle, ParticleContext, ParticleAnchor, simulateFrame as simParticleFrame, ParticleLayer } from './modules/Particle.js';
-import { ParticleSlowEffect } from './modules/ParticleEffects.js';
-import { randVec, Vec, vecAdd, vecApply, vecCpy, vecDiv, vecMul, vecNorm, vecSub } from './modules/vectors.js';
+import { ParticleFlowEffect, ParticleSlowEffect } from './modules/ParticleEffects.js';
+import { randVec, Vec, vecAdd, vecCpy, vecDiv, vecMul, vecNorm, vecSub } from './modules/vectors.js';
 import { RepeatingFunction, getElementSize } from './modules/utilities.js';
 
 import { button, messageField } from './main-layout.js';
@@ -63,19 +63,21 @@ class RectEmission {
     }
 }
 
-
 particleHandler.start();
 
+
 const particleSlowEffect = new ParticleSlowEffect(1, 0.5);
-const particleAdder = new RepeatingFunction(() => {
+const particleFlowEffect = new ParticleFlowEffect(1000, 5);
+export function spawnButtonParticles() {
     const surf = new RectEmission([0, 0], getElementSize(buttonAnchor.element));
 
     let posScratch = Vec(2);
     let velScratchA = Vec(2), velScratchB = Vec(2);
 
     for (let i = 0; i < 20; i++) {
-        const np = new Particle(particleLayerFgd, "?", 5, buttonAnchor);
+        const np = new Particle(particleLayerFgd, "?", 30, buttonAnchor);
         np.addEffect(particleSlowEffect);
+        np.addEffect(particleFlowEffect);
 
         surf.randomSurfacePos(posScratch);
         np.position = posScratch;
@@ -88,12 +90,16 @@ const particleAdder = new RepeatingFunction(() => {
             
             vecAdd(velScratchA, velScratchB, velScratchA);
 
-            vecMul(velScratchA, 200, velScratchA);
+            vecMul(velScratchA, 100, velScratchA);
             np.velocity = velScratchA;
         }
         particleContext.addParticle(np);
     }
-}, 3);
+}
+
+
+
+const particleAdder = new RepeatingFunction(() => void spawnButtonParticles(), 3);
 
 particleAdder.start();
 
