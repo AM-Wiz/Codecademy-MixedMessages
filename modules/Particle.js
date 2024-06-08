@@ -50,29 +50,114 @@ export class ParticleContext {
 }
 
 
+export class ParticleAnchor {
+    constructor(context, element, offset=null) {
+        this._context = context;
+        this._element = element;
+        this._offset = offset ?? Vec(2);
+
+        this._origin = Vec(2);
+    }
+
+
+    get origin() {
+        getElementPosition(null, this._element, this._origin);
+        vecAdd(this._origin, this._offset, this._origin);
+
+        return this._origin;
+    }
+    
+    toGlobal(value, dst=null) {
+        dst = vecCpy(value, dst);
+        vecAdd(dst, this.origin, dst);
+        
+        return dst;
+    }
+    fromGlobal(value, dst=null) {
+        dst = vecCpy(value, dst);
+        vecSub(dst, this.origin, dst);
+
+        return dst;
+    }
+}
+
+export class ParticleLayer { // TODO implement
+    constructor(context, element) {
+        this._context = context;
+        this._element = element;
+
+        this._origin = Vec(2);
+    }
+
+
+    get origin() {
+        getElementPosition(null, this._element, this._origin);
+
+        return this._origin;
+    }
+    
+    toGlobal(value, dst=null) {
+        dst = vecCpy(value, dst);
+        vecAdd(dst, this.origin, dst);
+        
+        return dst;
+    }
+    fromGlobal(value, dst=null) {
+        dst = vecCpy(value, dst);
+        vecSub(dst, this.origin, dst);
+
+        return dst;
+    }
+}
 
 export class Particle {
-    constructor(content, position, lifetime=null, anchor=null) {
+    constructor(layer, content, lifetime=null, anchor=null) {
         this._position = Vec(2);
+        this._globalPosition = Vec(2);
         this._velocity = Vec(2);
-        this._anchor = null;
+        this._anchor = anchor;
         
         this._effects = [];
 
         this._maxLifetime = lifetime;
         this._lifetime = 0;
 
+        this._layer = layer;
         this._context = null;
         this.state = PStates.initial;
         
         this._content = content;
         this._element = null;
-
-        if (position !== undefined)
-            this.position = position;
     }
 
 
+    get lifetime() {
+        return this._lifetime;
+    }
+    
+    /** @summary The maximum lifetime of the particle
+     *  @returns A positive non-zero number indicating the lifetime, or null if the particle is immortal
+     */
+    get maxLifetime() {
+        return this._maxLifetime;
+    }
+
+    get lifetimeElapsed() {
+        if (this._maxLifetime === null)
+            return 0;
+
+        return this._lifetime / this._maxLifetime;
+    }
+
+
+
+    #posFromGlob(value, dst) {
+        return this._anchor.fromGlobal(value, dst);
+    }
+    
+    #posToGlob(value, dst) {
+        return this._anchor.toGlobal(value, dst);
+    }
 
     get position() {
         return this._position;
@@ -80,8 +165,21 @@ export class Particle {
     
     set position(value) {
         vecCpy(value, this._position);
+        this.#posToGlob(this._position, this._globalPosition);
     }
     
+    get globalPosition() {
+        this.#posToGlob(this._position, this._globalPosition);
+        return this._globalPosition;
+    }
+
+    set globalPosition(value) {
+        vecCpy(value, this._globalPosition);
+        this.#posFromGlob(this._globalPosition, this._position);
+    }
+    
+
+
     get velocity() {
         return this._velocity;
     }
@@ -99,13 +197,6 @@ export class Particle {
         this._effects.push(effect);
     }
 
-}
-
-export class ParticleAnchor {
-    constructor(element, offset=null) {
-        this._element = element;
-        this._offset = offset ?? Vec(2);
-    }
 }
 
 
@@ -132,24 +223,6 @@ export class ParticleEffect {
     }
 }
 
-export class ParticleSlowEffect extends ParticleEffect {
-    constructor(amount) {
-        super();
-        this.amount = amount;
-    }
-
-
-    beforeApply(context, particles) {
-        const rat = 1 - this.amount * context.timeStep;
-        const temp = Vec(2);
-
-        particles.forEach(p => {
-            vecMul(p.velocity, rat, temp);
-            p.velocity = temp;
-        });
-    }
-}
-
 
 
 
@@ -159,23 +232,22 @@ function updateElementPos(context, anchor, element, position) {
     if (anchor) {
         vecAdd(eP, anchor._offset, eP);
         if (anchor._element !== null) {
-            const aP = getElementPosition(anchor._element);
+            const aP = getElementPosition(context._frame, anchor._element);
             vecAdd(eP, aP, eP);
         }
     }
 
-    const fp = getElementPosition(context._frame);
-    
-    vecSub(eP, fp, eP);
+    // element.innerText = `${Math.floor(eP[0])} ${Math.floor(eP[1])}`;
 
-    element.innerText = `${Math.floor(eP[0])} ${Math.floor(eP[1])}`;
-
-    setElementPosition(element, eP, [50, 50]);
+    setElementPosition(context._frame, element, eP);
 }
+
+
+const particleBodyClass = 'particle-container';
 
 function createElement(context, particle) {
     const newElem = document.createElement('div');
-    newElem.style.position = 'fixed';
+    newElem.classList.add(particleBodyClass);
     newElem.style.width = '50px';
     newElem.style.height = '50px';
 

@@ -22,6 +22,21 @@ export function vecCpy(src, dst=undefined) {
     return dst;
 }
 
+
+export function vecNeg(src, dst=undefined) {
+    dst ??= Vec(src.length);
+    for (let i = 0; i < dst.length; i++)
+        dst[i] = -src[i];
+    return dst;
+}
+
+export function vecRecip(src, dst=undefined) {
+    dst ??= Vec(src.length);
+    for (let i = 0; i < dst.length; i++)
+        dst[i] = 1.0 / src[i];
+    return dst;
+}
+
 export function vecAdd(a, b, dst=undefined) {
     dst ??= Vec(a['length'] ?? b['length']);
 

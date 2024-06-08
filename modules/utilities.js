@@ -61,22 +61,31 @@ export class RepeatingFunction {
 
 
 
+function getFrameAnchor(frame) {
+    if (!frame)
+        return [0, 0];
+    const fbr = frame.getBoundingClientRect();
 
-export function getElementPosition(element, dst = undefined) {
+    return [fbr.left, fbr.top];
+}
+
+export function getElementPosition(frame, element, dst = undefined) {
     if (dst === undefined)
         dst = [0, 0];
 
-    const br = element.getBoundingClientRect();
+    const fa = getFrameAnchor(frame);
+    const ebr = element.getBoundingClientRect();
     
-    dst[0] = window.screenX - (br.left + br.width / 2);
-    dst[1] = window.screenY - (br.top + br.height / 2);
+    dst[0] = (ebr.left + ebr.width / 2) + fa[0];
+    dst[1] = (ebr.top + ebr.height / 2) + fa[1];
 
     return dst;
 }
 
-export function setElementPosition(element, pos, dim=undefined) {
-    const w = dim[0] ?? 0, h = dim[1] ?? 0;
+export function setElementPosition(frame, element, pos) {
+    const fa = getFrameAnchor(frame);
+    const ebr = element.getBoundingClientRect();
     
-    element.style.left = `${(pos[0] + w/2) - window.screenX}px`;
-    element.style.top = `${(pos[1] + h/2) - window.screenY}px`;
+    element.style.left = `${(pos[0] - ebr.width / 2) - fa[0]}px`;
+    element.style.top = `${(pos[1] - ebr.height / 2) - fa[1]}px`;
 }
