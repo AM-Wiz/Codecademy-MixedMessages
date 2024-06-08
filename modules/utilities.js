@@ -5,6 +5,7 @@ export async function loadJSONRelative(path) {
 }
 
 export function delay(ms) {
+    ms = Math.floor(ms);
     return new Promise(res => setTimeout(res, ms));
 }
 

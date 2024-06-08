@@ -1,7 +1,7 @@
 import { Particle, ParticleContext, ParticleAnchor, simulateFrame as simParticleFrame, ParticleLayer } from './modules/Particle.js';
 import { ParticleFlowEffect, ParticleSlowEffect } from './modules/ParticleEffects.js';
 import { randVec, Vec, vecAdd, vecCpy, vecDiv, vecMul, vecNorm, vecSub } from './modules/vectors.js';
-import { RepeatingFunction, getElementSize } from './modules/utilities.js';
+import { RepeatingFunction, delay, getElementSize } from './modules/utilities.js';
 
 import { button, messageField } from './main-layout.js';
 
@@ -66,15 +66,23 @@ class RectEmission {
 particleHandler.start();
 
 
-const particleSlowEffect = new ParticleSlowEffect(1, 0.5);
+const particleSlowEffect = new ParticleSlowEffect(1, 0.1);
 const particleFlowEffect = new ParticleFlowEffect(1000, 5);
-export function spawnButtonParticles() {
+export async function spawnButtonParticles(count, period) {
+    if (count < 1)
+        return;
+
+    const minGapPeriod = 0.1;
+    const gapPeriod = period / count;
+
     const surf = new RectEmission([0, 0], getElementSize(buttonAnchor.element));
 
     let posScratch = Vec(2);
     let velScratchA = Vec(2), velScratchB = Vec(2);
 
-    for (let i = 0; i < 20; i++) {
+    let remaining = 0;
+    let batchCount = 0;
+    for (; remaining < count; remaining++) {
         const np = new Particle(particleLayerFgd, "?", 30, buttonAnchor);
         np.addEffect(particleSlowEffect);
         np.addEffect(particleFlowEffect);
@@ -90,16 +98,22 @@ export function spawnButtonParticles() {
             
             vecAdd(velScratchA, velScratchB, velScratchA);
 
-            vecMul(velScratchA, 100, velScratchA);
+            vecMul(velScratchA, 200, velScratchA);
             np.velocity = velScratchA;
         }
         particleContext.addParticle(np);
+
+        batchCount++;
+        if (batchCount * gapPeriod > minGapPeriod) {
+            await delay(minGapPeriod * 1000);
+            batchCount = 0;
+        }
     }
 }
 
 
 
-const particleAdder = new RepeatingFunction(() => void spawnButtonParticles(), 3);
+const particleAdder = new RepeatingFunction(() => void spawnButtonParticles(30, 1), 5);
 
 particleAdder.start();
 

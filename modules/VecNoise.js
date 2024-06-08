@@ -50,8 +50,11 @@ export class VecNoise {
         const s = this.smooth2x1(vecAdd(a, [0, -delta], this._scratch1));
         const w = this.smooth2x1(vecAdd(a, [-delta, 0], this._scratch1));
 
-        dst[0] = (e - w) / (2 * delta);
-        dst[1] = (n - s) / (2 * delta);
+        const x = (e - w) / (2 * delta);
+        const y = (n - s) / (2 * delta);
+
+        dst[0] = y;
+        dst[1] = -x;
 
         return dst;
     }

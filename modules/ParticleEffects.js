@@ -24,7 +24,6 @@ export class ParticleSlowEffect extends ParticleEffect {
 }
 
 
-
 export class ParticleFlowEffect extends ParticleEffect {
     constructor(force, scale = 1) {
         super();
