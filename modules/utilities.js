@@ -70,9 +70,8 @@ function getFrameAnchor(frame) {
 }
 
 export function getElementPosition(frame, element, dst = undefined) {
-    if (dst === undefined)
-        dst = [0, 0];
-
+    dst ??= [0, 0];
+    
     const fa = getFrameAnchor(frame);
     const ebr = element.getBoundingClientRect();
     
@@ -88,4 +87,12 @@ export function setElementPosition(frame, element, pos) {
     
     element.style.left = `${(pos[0] - ebr.width / 2) - fa[0]}px`;
     element.style.top = `${(pos[1] - ebr.height / 2) - fa[1]}px`;
+}
+
+export function getElementSize(frame, dst = undefined) {
+    dst ??= [0, 0];
+
+    const fbr = frame.getBoundingClientRect();
+
+    return [fbr.width, fbr.height];
 }

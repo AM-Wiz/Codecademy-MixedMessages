@@ -59,6 +59,8 @@ export class ParticleAnchor {
         this._origin = Vec(2);
     }
 
+    get element() { return this._element; }
+    get offset() { return this._offset; }
 
     get origin() {
         getElementPosition(null, this._element, this._origin);
@@ -253,7 +255,7 @@ function createElement(context, particle) {
 
     updateElementPos(context, particle._anchor, newElem, particle.position);
 
-    newElem.style.backgroundColor = 'red';
+    // newElem.style.backgroundColor = 'red';
     if (typeof particle._content === 'string') {
         newElem.innerText = particle._content;
     } else {

@@ -49,6 +49,10 @@ hr.container-div {
     }
 }
 
+#main-container {
+    z-index: 10;
+}
+
 
 #message-field {
     min-height: 200px;
@@ -67,17 +71,25 @@ hr.container-div {
     padding: 5px;
     padding-left: 10px;
     padding-right: 10px;
+    z-index: 50;
 }
-
 
 #overlay {
     display: block;
     pointer-events: none;
 }
 
+#particle-frame-bgd {
+    z-index: 5;
+}
+
+#particle-frame-fgd {
+    z-index: 30;
+}
+
 
 .fill-container {
-    position: fixed;
+    position: absolute;
     width: 100%;
     height: 100%;
     top: 0;

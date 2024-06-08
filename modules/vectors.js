@@ -108,3 +108,40 @@ export function vecDiv(a, b, dst=undefined) {
     
     return dst;
 }
+
+
+export function vecDot(a, b) {
+    let acc = 0;
+    for (let i = 0; i < a.length; i++)
+        acc += a[i] * b[i];
+    return acc;
+}
+
+export function vecSqrLen(a) {
+    return a.reduce((a, b) => a + b * b, 0);
+}
+
+export function vecLen(a) {
+    return Math.sqrt(vecSqrLen(a));
+}
+
+export function vecNorm(a, dst = undefined) {
+    dst = vecCpy(a, dst);
+    
+    const len = vecLen(dst);
+
+    if (len > 0.001)
+        vecDiv(dst, len, dst);
+
+    return dst;
+}
+
+
+export function vecApply(a, func, dst = undefined) {
+    dst ??= Vec(a.length);
+
+    for (let i = 0; i < a.length; i++)
+        dst[i] = func(a[i], i);
+
+    return dst;
+}

@@ -1,7 +1,8 @@
 
 .particle-container {
-    position: fixed;
+    position: absolute;
     text-align: center;
     align-content: center;
     justify-content: center;
+    z-index: inherit;
 }
