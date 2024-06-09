@@ -100,6 +100,22 @@ hr.container-div {
 }
 
 
+.particle-text {
+    display: block;
+    position: static;
+    transform-origin: center;
+
+    font-size: x-large;
+    font-weight: bold;
+    color: black;
+}
+
+@supports (-webkit-text-stroke: 1px black) {
+    .particle-text {
+        color: whitesmoke;
+        -webkit-text-stroke: 1px black;
+    }
+}
 
 
 

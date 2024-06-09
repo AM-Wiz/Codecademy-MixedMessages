@@ -18,15 +18,83 @@ const CStates = {
 };
 
 
+
+class PEffectList {
+    constructor() {
+        this._map = new Map();
+    }
+    
+    get entries() {
+        return this._map.entries();
+    }
+
+    reset() {
+        this._map.values().forEach(a => a.length = 0);
+    }
+
+    #ensureEffect(effect) {
+        let data = this._map.get(effect);
+        if (data == undefined) {
+            data = [];
+            this._map.set(effect, data);
+        }
+
+        return data;
+    }
+
+    add(particle) {
+        particle.effects.forEach(e => {
+            this.#ensureEffect(e).push(particle);
+        });
+    }
+}
+
+class CEffectList {
+    constructor() {
+        this._map = new Map();
+    }
+    
+    get entries() {
+        return this._map.entries();
+    }
+
+    reset() {
+        this._map.values().forEach(a => a.length = 0);
+    }
+
+    #ensureEffect(effect) {
+        let data = this._map.get(effect);
+        if (data == undefined) {
+            data = [];
+            this._map.set(effect, data);
+        }
+
+        return data;
+    }
+
+    add(particle) {
+        if (!particle._content)
+            return;
+
+        particle._content.effects.forEach(e => {
+            this.#ensureEffect(e).push(particle);
+        });
+    }
+}
+
+
 export class ParticleContext {
     constructor(frame) {
         this._frame = frame;
-        this.particles = [];
+        this.particles = []; // TODO rename
         this.newParticles = [];
         this.dyingParticles = [];
         this._timeStep = 1.0 / 30;
         this._time = 0;
         this._state = CStates.idle;
+
+        this._pEffectScratch = new PEffectList();
+        this._cEffectScratch = new CEffectList();
     }
 
     addParticle(particle) {
@@ -196,14 +264,38 @@ export class Particle {
     }
     
 
+    get effects() {
+        return this._effects;
+    }
+    set effects(value) {
+        if (!Array.isArray(value))
+            throw Error('Invalid effects array');
+        value = Array.from(value);
+
+        this._effects = value;
+    }
+
+
     addEffect(effect) {
+        if (!(effect instanceof ParticleEffect))
+            throw Error('Invalid effect');
+
         this._effects.push(effect);
     }
 
     removeEffect(effect) {
+        if (!(effect instanceof ParticleEffect))
+            throw Error('Invalid effect');
+        
         this._effects.push(effect);
     }
 
+
+
+
+    get elementContent() {
+        return this._element.childNodes[0];
+    }
 }
 
 
@@ -226,6 +318,78 @@ export class ParticleEffect {
     }
 
     after(context, particles) {
+
+    }
+}
+
+
+export class ParticleContent {
+    constructor(initial = {}) {
+        this._dimensions = Vec([50, 50]);
+        this._text = undefined;
+        this._html = undefined;
+
+        this._effects = [];
+
+        for (const k in initial) {
+            this[k] = initial[k];
+        }
+    }
+
+    get dimensions() { return this._dimensions; }
+    
+    set dimensions(value) {
+        vecCpy(value, this._dimensions);
+    }
+
+    get text() { return this._text; }
+    set text(value) {
+        this._text = value;
+        this._html = undefined;
+    }
+    
+    get html() { return this._html; }
+    set html(value) {
+        this._html = value;
+        this._text = undefined;
+    }
+
+    
+    get effects() {
+        return this._effects;
+    }
+    
+    set effects(value) {
+        if (!Array.isArray(value))
+            throw Error('Invalid effects array');
+        value = Array.from(value);
+
+        this._effects = value;
+    }
+
+
+    addEffect(effect) {
+        if (!(effect instanceof ParticleContentEffect))
+            throw Error('Invalid effect');
+
+        this._effects.push(effect);
+    }
+
+    removeEffect(effect) {
+        if (!(effect instanceof ParticleContentEffect))
+            throw Error('Invalid effect');
+
+        this._effects.push(effect);
+    }
+}
+
+
+export class ParticleContentEffect {
+    constructor() {
+
+    }
+
+    apply(context, particles) {
 
     }
 }
@@ -255,17 +419,23 @@ const particleBodyClass = 'particle-container';
 function createElement(context, particle) {
     const newElem = document.createElement('div');
     newElem.classList.add(particleBodyClass);
-    newElem.style.width = '50px';
-    newElem.style.height = '50px';
+    
+    let dimensions;
+    // newElem.style.backgroundColor = 'red';
+    if (particle._content) {
+        if (particle._content.text !== undefined)
+            newElem.innerText = particle._content.text;
+        else if (particle._content.html !== undefined)
+            newElem.innerHTML = particle._content.html;
+        dimensions = particle._content.dimensions;
+    } else {
+        dimensions = [50, 50];
+    }
+    
+    newElem.style.width = `${dimensions[0]}px`;
+    newElem.style.height = `${dimensions[1]}px`;
 
     updateElementPos(context, particle._anchor, newElem, particle.position);
-
-    // newElem.style.backgroundColor = 'red';
-    if (typeof particle._content === 'string') {
-        newElem.innerText = particle._content;
-    } else {
-
-    }
 
     particle._element = newElem;
     context._frame.appendChild(newElem);
@@ -323,24 +493,27 @@ function removeOld(context) {
     }
 }
 
+function processEffects(context) {
+    context._pEffectScratch.reset();
+
+    context.particles.forEach(a => {
+        context._pEffectScratch.add(a);
+    });
+
+    for (const [ef, ps] of context._pEffectScratch.entries) {
+        ef.before(context, ps);
+    }
+}
 
 function simulate(context) {
     const tempV = Vec(2);
 
-    for (let i = 0; i < context.particles.length; i++) { // TODO optimize
-        const p = context.particles[i];
-
-        p._effects.forEach(e => {
-            e.before(context, [p]);
-        });
+    for (const [ef, ps] of context._pEffectScratch.entries) {
+        ef.beforeVel(context, ps);
     }
-
-    for (let i = 0; i < context.particles.length; i++) { // TODO optimize
-        const p = context.particles[i];
-
-        p._effects.forEach(e => {
-            e.beforeVel(context, [p]);
-        });
+    
+    for (const [ef, ps] of context._pEffectScratch.entries) {
+        ef.beforeApply(context, ps);
     }
 
     for (let i = 0; i < context.particles.length; i++) {
@@ -349,21 +522,24 @@ function simulate(context) {
         vecMul(p.velocity, context.timeStep, tempV);
         vecAdd(p.position, tempV, p.position);
     }
-    
-    for (let i = 0; i < context.particles.length; i++) { // TODO optimize
-        const p = context.particles[i];
-
-        p._effects.forEach(e => {
-            e.beforeApply(context, [p]);
-        });
-    }
 }
 
 function updateElements(context) {
+    context._cEffectScratch.reset();
+
+    context.particles.forEach(a => {
+        context._cEffectScratch.add(a);
+    });
+
+    
     for (let i = 0; i < context.particles.length; i++) {
         const p = context.particles[i];
-
+        
         updateElement(context, p);
+    }
+
+    for (const [ef, ps] of context._cEffectScratch.entries) {
+        ef.apply(context, ps);
     }
 }
 
@@ -379,6 +555,13 @@ export function simulateFrame(context, timeStep) {
         addNew(context);
         tickLife(context);
         removeOld(context);
+    } catch (e) {
+        context._state = CStates.idle;
+        throw e;
+    }
+
+    try {
+        processEffects(context);
     } catch (e) {
         context._state = CStates.idle;
         throw e;

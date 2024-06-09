@@ -1,9 +1,6 @@
 import { delay, getElementPosition, RepeatingFunction } from './modules/utilities.js';
-
 import { button, messageField } from './main-layout.js';
-
 import mainParticles from './main-particles.js';
-
 
 import Messages from './messages.js'
 const beforeMessages = Messages.generatorIdleMsgs.reweightBy((w, v) => v.before ? w : 0);
@@ -28,6 +25,7 @@ button.addEventListener('click', async (e) => {
     const weightedAfterMsgs = Messages.fromToneWeighting(afterMessages, msg.tone);
     const afterMsg = weightedAfterMsgs.getRandom();
 
+    mainParticles.spawnButtonParticles(30, 0.5, waitSeconds);
 
     console.log(weightedBeforeMsgs);
     console.log(beforeMsg.tone);

@@ -1,4 +1,4 @@
-import { Particle, ParticleContext, ParticleAnchor, simulateFrame as simParticleFrame, ParticleLayer } from './modules/Particle.js';
+import { Particle, ParticleContext, ParticleAnchor, simulateFrame as simParticleFrame, ParticleLayer, ParticleContent, ParticleContentEffect } from './modules/Particle.js';
 import { ParticleFlowEffect, ParticleSlowEffect } from './modules/ParticleEffects.js';
 import { randVec, Vec, vecAdd, vecCpy, vecDiv, vecMul, vecNorm, vecSub } from './modules/vectors.js';
 import { RepeatingFunction, delay, getElementSize } from './modules/utilities.js';
@@ -68,7 +68,59 @@ particleHandler.start();
 
 const particleSlowEffect = new ParticleSlowEffect(1, 0.1);
 const particleFlowEffect = new ParticleFlowEffect(1000, 5);
-export async function spawnButtonParticles(count, period) {
+
+const particleShrinkEffect = new class ParticleShrinkEffect extends ParticleContentEffect {
+    constructor() {
+        super();
+    }
+
+    #sCurve(x) {
+        const firstStep = 0.6;
+
+        if (x < firstStep) {
+            x = 1;
+        } else {
+            x = (x - firstStep) / (1 - firstStep);
+            x = 1 - x;
+        }
+
+        return x;
+    }
+    
+    #oCurve(x) {
+        const firstStep = 0.1, secondStep = 0.6;
+
+        if (x < firstStep) {
+            x = (x) / (firstStep);
+        } else if (x < secondStep) {
+            x = 1;
+        } else {
+            x = (x - secondStep) / (1 - secondStep);
+            x = 1 - x;
+        }
+
+        return x;
+    }
+
+    apply(context, particles) {
+        particles.forEach(p => {
+            const ec = p.elementContent;
+
+            const v = this.#sCurve(p.lifetimeElapsed);
+
+            ec.style.scale = `${this.#sCurve(p.lifetimeElapsed) * 100}%`;
+            ec.style.opacity = `${this.#oCurve(p.lifetimeElapsed) * 100}%`;
+        });
+    }
+};
+
+const questionContent = new ParticleContent({
+    dimensions: [50, 50],
+    html: "<span class='particle-text'>?</span>",
+    effects: [particleShrinkEffect],
+});
+
+async function spawnButtonParticles(count, period, lifetime) {
     if (count < 1)
         return;
 
@@ -83,7 +135,10 @@ export async function spawnButtonParticles(count, period) {
     let remaining = 0;
     let batchCount = 0;
     for (; remaining < count; remaining++) {
-        const np = new Particle(particleLayerFgd, "?", 30, buttonAnchor);
+        let totalLifetime = lifetime;
+        totalLifetime += Math.max(0.05 * totalLifetime, 0.4) * (Math.random() * 2 - 1);
+
+        const np = new Particle(particleLayerFgd, questionContent, totalLifetime, buttonAnchor);
         np.addEffect(particleSlowEffect);
         np.addEffect(particleFlowEffect);
 
@@ -113,14 +168,14 @@ export async function spawnButtonParticles(count, period) {
 
 
 
-const particleAdder = new RepeatingFunction(() => void spawnButtonParticles(30, 1), 5);
+// const particleAdder = new RepeatingFunction(() => void spawnButtonParticles(30, 1), 5);
 
-particleAdder.start();
+// particleAdder.start();
 
 
 
 
 
 export default {
-
+    spawnButtonParticles,
 };
