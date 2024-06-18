@@ -1,20 +1,53 @@
 [
     { "first": "mysterious", "second": "mysterious", "wgt": 2 },
-    { "first": "mysterious", "second": "ominous", "wgt": 1.5 },
-    { "first": "mysterious", "second": "hopeful", "wgt": 0.6 },
-    { "first": "mysterious", "second": "excited", "wgt": 0.8 },
+    { "first": "mysterious", "second": "ominous", "wgt": 1.2 },
+    { "first": "mysterious", "second": "hopeful", "wgt": 1.1 },
+    { "first": "mysterious", "second": "excited", "wgt": 1.2 },
+    { "first": "mysterious", "second": "disturbing", "wgt": 1.1 },
 
     { "first": "ominous", "second": "ominous", "wgt": 2 },
-    { "first": "ominous", "second": "melancholy", "wgt": 1.5 },
-    { "first": "ominous", "second": "hopeful", "wgt": 0.1 },
+    { "first": "ominous", "second": "melancholy", "wgt": 1.3 },
+    { "first": "ominous", "second": "hopeful", "wgt": 0.2 },
     { "first": "ominous", "second": "excited", "wgt": 0.2 },
-
+    { "first": "ominous", "second": "disturbing", "wgt": 1.6 },
+    
     { "first": "melancholy", "second": "melancholy", "wgt": 2 },
     { "first": "melancholy", "second": "hopeful", "wgt": 0.5 },
     { "first": "melancholy", "second": "excited", "wgt": 0.1 },
-
+    { "first": "melancholy", "second": "disturbing", "wgt": 1 },
+    
     { "first": "hopeful", "second": "hopeful", "wgt": 2 },
     { "first": "hopeful", "second": "excited", "wgt": 1.5 },
+    { "first": "hopeful", "second": "disturbing", "wgt": 0.05 },
     
-    { "first": "excited", "second": "excited", "wgt": 2 }
+    { "first": "excited", "second": "excited", "wgt": 2 },
+    { "first": "excited", "second": "disturbing", "wgt": 0.1 },
+
+    { "first": "disturbing", "second": "disturbing", "wgt": 2 },
+
+
+
+
+
+    { "first": "watched", "second": "watched", "wgt": 2 },
+    { "first": "watched", "second": "disturbing", "wgt": 1.5 },
+    { "first": "watched", "second": "ominous", "wgt": 1.3 },
+    { "first": "watched", "second": "hopeful", "wgt": 0.1 },
+    { "first": "watched", "second": "excited", "wgt": 0.1 },
+
+
+    { "first": "signs", "second": "signs", "wgt": 2 },
+    { "first": "signs", "second": "mysterious", "wgt": 1.6 },
+    { "first": "signs", "second": "ominous", "wgt": 1.3 },
+
+    
+    { "first": "fortune", "second": "fortune", "wgt": 2 },
+    { "first": "fortune", "second": "mysterious", "wgt": 1.2 },
+
+
+    { "first": "silly", "second": "silly", "wgt": 2},
+    { "first": "silly", "second": "hopeful", "wgt": 1.1},
+    { "first": "silly", "second": "excited", "wgt": 1.1},
+    { "first": "silly", "second": "ominous", "wgt": 0.2},
+    { "first": "silly", "second": "disturbing", "wgt": 0.1}
 ]

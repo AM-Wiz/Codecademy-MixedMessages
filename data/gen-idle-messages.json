@@ -19,33 +19,33 @@
     },
     {
         "msg": "Try your luck!",
-        "tone": "excited",
+        "tone": ["excited", "hopeful", "fortune"],
         "before": true
     },
     {
         "msg": "Try your luck again!",
-        "tone": "excited",
+        "tone": ["excited", "hopeful", "fortune"],
         "after": true
     },
     {
         "msg": "What could possibly go wrong?",
-        "tone": ["excited", "hopeful"],
+        "tone": ["excited", "hopeful", "fortune"],
         "before": true
     },
     {
         "msg": "What else could possibly go wrong?",
-        "tone": ["melancholy"],
+        "tone": ["melancholy", "excited", "hopeful", "fortune"],
         "after": true
     },
     {
         "msg": "What could pawssibly go wrong?",
-        "tone": ["excited", "hopeful"],
+        "tone": ["excited", "hopeful", "silly"],
         "wgt": 0.1,
         "before": true
     },
     {
         "msg": "What else could pawssibly go wrong?",
-        "tone": ["melancholy"],
+        "tone": ["melancholy", "silly"],
         "wgt": 0.1,
         "after": true
     }

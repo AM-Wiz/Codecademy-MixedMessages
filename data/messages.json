@@ -1,48 +1,109 @@
 [
     {
-        "msg": "Beware of the clouds.",
-        "tone": ["ominous", "mysterious"]
+        "msg": "Watch out for clouds.",
+        "wgt": 0.2,
+        "tone": ["ominous", "mysterious", "signs"]
+    },
+    {
+        "msg": "Beware of the cloud.",
+        "wgt": 0.2,
+        "tone": ["ominous", "mysterious", "signs"]
     },
     {
         "msg": "Stay away from railway tracks.",
-        "tone": ["ominous"]
+        "tone": ["ominous", "disturbing"]
     },
     {
         "msg": "Dog is man's best friend, but not yours.",
-        "tone": ["ominous"]
+        "tone": ["ominous", "disturbing", "signs"]
+    },
+    {
+        "msg": "The moon will pass through an odd phase.",
+        "tone": ["ominous", "mysterious", "signs"]
+    },
+    {
+        "msg": "Do not trust the man with brown eyes.",
+        "tone": ["ominous", "mysterious", "watched"]
+    },
+    {
+        "msg": "The tides will ebb as surely as they flow.",
+        "tone": ["hopeful", "melancholy", "mysterious", "fortune"]
+    },
+    {
+        "msg": "The tides will flow as surely as they ebb.",
+        "tone": ["hopeful", "melancholy", "mysterious", "fortune"]
+    },
+    {
+        "msg": "Fear not the fall, for it must inevitably end in a landing.",
+        "tone": ["hopeful", "melancholy", "mysterious", "fortune"]
+    },
+    {
+        "msg": "Why wait for heaven?",
+        "wgt": 0.3,
+        "tone": ["mysterious", "fortune"]
+    },
+    {
+        "msg": "Why wait for tomorrow while today waits for you?",
+        "tone": ["hopeful", "fortune"]
+    },
+    {
+        "msg": "A patron has put in a good word for you.",
+        "wgt": 0.2,
+        "tone": ["hopeful", "mysterious", "signs"]
+    },
+    {
+        "msg": "You have made a powerful enemy.",
+        "wgt": 0.3,
+        "tone": ["mysterious", "ominous", "signs"]
     },
     {
         "msg": "Behind you!",
         "wgt": 0.3,
-        "tone": ["ominous"]
+        "tone": ["ominous", "disturbing", "watched"]
     },
     {
-        "msg": "The moon will pass through an odd phase.",
-        "tone": ["ominous", "mysterious"]
+        "msg": "Check behind the towel holder.",
+        "wgt": 0.3,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
     },
     {
-        "msg": "Do not trust the man with brown eyes.",
-        "tone": ["ominous", "mysterious"]
+        "msg": "Did you see it?",
+        "wgt": 0.3,
+        "tone": ["mysterious", "ominous", "watched"]
     },
     {
-        "msg": "The tides will ebb as surely as they flow.",
-        "tone": ["hopeful", "melancholy", "mysterious"]
+        "msg": "Did you just see that?",
+        "wgt": 0.3,
+        "tone": ["mysterious", "ominous", "watched"]
     },
     {
-        "msg": "The tides will flow as surely as they ebb.",
-        "tone": ["hopeful", "melancholy", "mysterious"]
+        "msg": "Something waits for you.",
+        "wgt": 0.5,
+        "tone": ["mysterious", "ominous", "watched"]
     },
     {
-        "msg": "Fear not the fall, for it must inevitably end in a landing.",
-        "tone": ["hopeful", "melancholy", "mysterious"]
+        "msg": "Something is waiting for you.",
+        "wgt": 0.2,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
     },
     {
-        "msg": "Why wait for heaven?",
-        "wgt":0.3,
-        "tone": ["mysterious"]
+        "msg": "Something large is waiting for you.",
+        "wgt": 0.1,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
     },
     {
-        "msg": "Why wait for tomorrow when today waits for you?",
-        "tone": ["hopeful"]
+        "msg": "Someone waits for you outside.",
+        "wgt": 0.1,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
+    },
+    {
+        "msg": "It is too late to draw your curtains.",
+        "wgt": 0.1,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
+    },
+    {
+        "msg": "Check for cameras.",
+        "wgt": 0.1,
+        "tone": ["mysterious", "ominous", "disturbing", "watched"]
     }
 ]

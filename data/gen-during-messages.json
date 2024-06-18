@@ -1,6 +1,13 @@
 [
     {
-        "msg": "Rolling dice... 🎲🎲"
+        "msg": "Rolling dice... 🎲🎲",
+        "tone": ["fortune"],
+        "wgt": 1.5
+    },
+    {
+        "msg": "Studying the cards... 🎴🎴",
+        "tone": ["fortune", "signs"],
+        "wgt": 1.5
     },
     {
         "msg": "Oh you're in for it now...",
@@ -9,47 +16,92 @@
     },
     {
         "msg": "Do you have good life insurance?",
-        "tone": "ominous",
+        "tone": ["ominous", "disturbing"],
         "wgt": 0.2
     },
     {
         "msg": "Feeling lucky?",
-        "tone": ["hopeful", "excited"],
+        "tone": ["hopeful", "excited", "fortune"],
         "wgt": 0.4
     },
     {
         "msg": "This is the one 🙏🏿",
-        "tone": "hopeful",
+        "tone": ["hopeful", "excited"],
         "wgt": 0.3
     },
     {
         "msg": "Casting chicken bones...",
-        "tone": "mysterious",
+        "tone": ["mysterious", "ominous", "fortune", "signs"],
+        "wgt": 0.3
+    },
+    {
+        "msg": "Studying ripples across a bowl of pig's blood...",
+        "tone": ["mysterious", "ominous", "disturbing", "signs"],
+        "wgt": 0.1
+    },
+    {
+        "msg": "Studying chicken entrails...",
+        "tone": ["mysterious", "ominous", "disturbing", "signs"],
+        "wgt": 0.1
+    },
+    {
+        "msg": "Studying ripples across a bowl of ink...",
+        "tone": ["mysterious", "fortune", "signs"],
         "wgt": 0.3
     },
     {
         "msg": "Studying the heavens...",
-        "tone": "mysterious",
+        "tone": ["mysterious", "fortune", "signs"],
         "wgt": 0.3
     },
     {
         "msg": "Scrying the stars... ⭐",
-        "tone": "mysterious",
+        "tone": ["mysterious", "fortune", "signs"],
+        "wgt": 0.3
+    },
+    {
+        "msg": "Tracing lines of the palm... 🤲",
+        "tone": ["mysterious", "fortune", "signs"],
         "wgt": 0.3
     },
     {
         "msg": "Watching the winds... 💨",
-        "tone": "mysterious",
+        "tone": ["mysterious", "fortune", "signs"],
         "wgt": 0.3
     },
     {
         "msg": "Tracing drops of rain... 🌧",
-        "tone": "mysterious",
+        "tone": ["mysterious", "fortune", "signs"],
         "wgt": 0.3
     },
     {
         "msg": "Counting lucky stars... ✨",
-        "tone": "hopeful",
+        "tone": ["hopeful", "fortune", "signs"],
         "wgt": 0.3
+    },
+    {
+        "msg": "Consulting with Thoth...",
+        "tone": ["mysterious", "fortune", "signs"],
+        "wgt": 0.3
+    },
+    {
+        "msg": "Groping through the darkness...",
+        "tone": ["mysterious", "ominous", "fortune", "signs"],
+        "wgt": 0.3
+    },
+    {
+        "msg": "Watching you...",
+        "tone": ["ominous", "disturbing", "signs", "watched"],
+        "wgt": 0.1
+    },
+    {
+        "msg": "Don't cover your webcam...",
+        "tone": ["ominous", "disturbing", "signs", "watched"],
+        "wgt": 0.1
+    },
+    {
+        "msg": "Studying the footage...",
+        "tone": ["mysterious", "disturbing", "signs", "watched"],
+        "wgt": 0.1
     }
 ]
