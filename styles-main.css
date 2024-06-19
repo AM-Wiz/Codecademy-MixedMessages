@@ -1,4 +1,12 @@
 
+:root {
+    --bgd-color: coral;
+    --fgd-color: burlywood;
+    --pgd-color: beige;
+    --pgd-color-accent: #c0a15d;
+}
+
+
 .center-content {
     display: grid;
     align-items: center;
@@ -35,6 +43,10 @@ hr.container-div {
     width: 100%;
 }
 
+
+html {
+    height: 100%;
+}
 
 
 #main-title {
@@ -120,13 +132,16 @@ hr.container-div {
 
 
 .bgd-color {
-    background-color: coral;
+    background-color: var(--bgd-color);
 }
 
 .fgd-color {
-    background-color: burlywood;
+    background-color: var(--fgd-color);
 }
 
 .pgd-color {
-    background-color: beige;
+    background:
+        radial-gradient(ellipse at top, var(--pgd-color-accent), transparent 100%),
+        radial-gradient(ellipse at top left, var(--pgd-color-accent), transparent 100%),
+        var(--pgd-color);
 }
