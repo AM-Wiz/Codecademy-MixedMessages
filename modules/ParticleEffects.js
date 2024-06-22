@@ -5,7 +5,7 @@ import { VecNoise } from "./VecNoise.js";
 
 
 export class ParticleSlowEffect extends ParticleEffect {
-    constructor(amount, period = 1) {
+    constructor(amount = 1, period = 1) {
         super();
         this.amount = amount;
         this.period = period;
@@ -25,7 +25,7 @@ export class ParticleSlowEffect extends ParticleEffect {
 
 
 export class ParticleFlowEffect extends ParticleEffect {
-    constructor(force, scale = 1) {
+    constructor(force = 10, scale = 1) {
         super();
         this.force = force;
         this.scale = scale;
