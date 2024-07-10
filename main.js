@@ -57,7 +57,57 @@ button.addEventListener('click', async (e) => {
 }
 
 
+import { deserialize, Serializer } from './modules/Deserializer.js';
 
+{
+    class TestClass {
+        constructor() {
+            this._valueA = null;
+            this._valueB = null;
+        }
+
+        valueC = null;
+
+        get valueA() {
+            return this._valueA;
+        }
+
+        set valueA(value) {
+            this._valueA = value;
+        }
+        
+        get valueB() {
+            return this._valueB;
+        }
+
+        set valueB(value) {
+            this._valueB = value;
+        }
+    }
+
+
+    const testJson = [
+        {
+            "$name": "A",
+            "$type": "TestClass",
+            "valueA": 5,
+        },
+        {
+            "$name": "B",
+            "$inherit": "A",
+            "valueB": "text",
+        }
+    ];
+
+    const testSrz = new Serializer();
+    testSrz.classes = [
+        TestClass
+    ];
+
+    const result = deserialize(testSrz, testJson);
+
+    console.log(result.valueCollection);
+}
 
 // console.log(getElementPosition(document.body, particleFrame));
 // console.log(getElementPosition(document.body, button));
