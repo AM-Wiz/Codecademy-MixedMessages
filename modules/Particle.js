@@ -99,7 +99,7 @@ export class ParticleContext {
 
     addParticle(particle) {
         if (!(particle['state'] === PStates.initial))
-            throw Error('Particle was invalid or not in the initial state');
+            throw new Error('Particle was invalid or not in the initial state');
 
         particle.state = PStates.adding;
         this.newParticles.push(particle);
@@ -269,7 +269,7 @@ export class Particle {
     }
     set effects(value) {
         if (!Array.isArray(value))
-            throw Error('Invalid effects array');
+            throw new Error('Invalid effects array');
         value = Array.from(value);
 
         this._effects = value;
@@ -278,14 +278,14 @@ export class Particle {
 
     addEffect(effect) {
         if (!(effect instanceof ParticleEffect))
-            throw Error('Invalid effect');
+            throw new Error('Invalid effect');
 
         this._effects.push(effect);
     }
 
     removeEffect(effect) {
         if (!(effect instanceof ParticleEffect))
-            throw Error('Invalid effect');
+            throw new Error('Invalid effect');
         
         this._effects.push(effect);
     }
@@ -361,7 +361,7 @@ export class ParticleContent {
     
     set effects(value) {
         if (!Array.isArray(value))
-            throw Error('Invalid effects array');
+            throw new Error('Invalid effects array');
         value = Array.from(value);
 
         this._effects = value;
@@ -370,14 +370,14 @@ export class ParticleContent {
 
     addEffect(effect) {
         if (!(effect instanceof ParticleContentEffect))
-            throw Error('Invalid effect');
+            throw new Error('Invalid effect');
 
         this._effects.push(effect);
     }
 
     removeEffect(effect) {
         if (!(effect instanceof ParticleContentEffect))
-            throw Error('Invalid effect');
+            throw new Error('Invalid effect');
 
         this._effects.push(effect);
     }
@@ -546,7 +546,7 @@ function updateElements(context) {
 
 export function simulateFrame(context, timeStep) {
     if (!(context._state === CStates.idle))
-        throw Error('Invalid operation');
+        throw new Error('Invalid operation');
 
     context._state = CStates.updatingParticles;
     context._timeStep = timeStep;

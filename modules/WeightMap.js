@@ -15,13 +15,13 @@ export class WeightMap {
         } else if (typeof initial === 'object' && initial.constructor?.name === 'Entry') {
             this.add(initial.weight, initial.value);
         } else if (initial !== undefined) {
-            throw Error('Bad initial value');
+            throw new Error('Bad initial value');
         }
     }
 
     add(weight, value) {
         if (!(weight > 0))
-            throw Error('Invalid weight!');
+            throw new Error('Invalid weight!');
 
         this.total_ += weight
         
@@ -49,7 +49,7 @@ export class WeightMap {
             e => {
                 const newWeight = weightFunc(e.weight, e.value);
                 if (!(newWeight >= 0))
-                    throw Error('Invalid reweighting');
+                    throw new Error('Invalid reweighting');
                 
                 return new Entry(newWeight, e.value);
             }

@@ -1,11 +1,62 @@
 
+function isTypeClass(maybeType) {
+    return maybeType && maybeType['constructor'] !== undefined;
+}
+
 
 export class SrzClass {
-    constructor(name, type, fields) {
-        this._name = name;
+
+    static #processFields(fields) {
+        if (!fields)
+            return [];
+
+        var fcpy = [];
+
+        for (const f of fields) {
+            if (f instanceof SrzField) {
+                fcpy.push(f);
+                continue;
+            } else if (typeof f == 'object') {
+                const name = f.name;
+                const klass = f.class;
+                if (!(typeof name == 'string' && klass instanceof SrzClass))
+                    throw new Error('Invalid implicit field type');
+
+                const autof = new SrzField(name, klass, f);
+                fcpy.push(autof);
+            } else {
+                throw new Error('Invalid input');
+            }
+        }
+
+        return fcpy;
+    }
+
+    /**
+     * 
+     * @param {Object} type 
+     * @param {Object} options 
+     */
+    constructor(type, options = null) {
+        if (!isTypeClass(type))
+            throw new Error('Invalid type');
+
+        this._name = null;
         this._type = type;
-        this._fields = fields ?? [];
+        this._fields = [];
         this._fieldMap = null;
+
+        if (options) {
+            const fields = options.fields;
+            const name = options.name;
+            if (fields instanceof Array)
+                this.fields = fields;
+            if (typeof name == 'string')
+                this._name = name;
+        }
+
+        if (this._name == null)
+            this._name = type.name;
     }
 
     get name() {
@@ -18,6 +69,11 @@ export class SrzClass {
 
     get fields() {
         return this._fields;
+    }
+
+    set fields(fields) {
+        this._fields = SrzClass.#processFields(fields);
+        this._fieldMap = null;
     }
 
     getField(name) {
@@ -52,16 +108,32 @@ export class SrzClass {
         return t;
     }
 
+    /**
+     * @param {SrzElement} element 
+     */
     onDsrz(element) {
-        throw Error('Not implemented');
+        element.initializeDefaultValue();
+
+        this.fields.forEach(f => {
+            f.onDsrz(element);
+        });
     }
 }
 
 export class SrzField {
-    constructor(name, fieldClass) {
+    constructor(name, fieldClass, options = null) {
         this._name = name;
         this._fieldClass = fieldClass;
         this._owned = false;
+        this._required = true;
+
+        if (options) {
+            if (typeof options.owned == 'boolean')
+                this._owned = options.owned;
+            
+            if (typeof options.required == 'boolean')
+                this._required = options.required;
+        }
     }
 
     /**
@@ -87,37 +159,75 @@ export class SrzField {
 
     set owned(value) {
         if (typeof value !== 'boolean')
-            throw Error('Incorrect type');
+            throw new Error('Incorrect type');
 
         this._owned = value;
     }
     
+    get required() {
+        return this._required;
+    }
+
+    set required(value) {
+        if (typeof value !== 'boolean')
+            throw new Error('Incorrect type');
+
+        this._required = value;
+    }
 
     /**
      * Get the value of the field on target
-     * @param {*} target 
-     * @returns {*} 
+     * @param {any} target 
+     * @returns {any} 
      */
     getValue(target) {
         return target[this.name];
     }
 
     /**
+     * 
+     * @param {any} target 
+     * @returns {boolean}
+     */
+    hasValue(target) {
+        return this.getValue(target) !== undefined;
+    }
+
+    /**
      * Set the value of the field on target to fieldValue
-     * @param {*} target 
-     * @param {*} fieldValue 
+     * @param {any} target 
+     * @param {any} fieldValue 
      */
     setValue(target, fieldValue) {
         target[this.name] = fieldValue;
     }
     
     /**
+     * 
+     * @param {any} elementData 
+     * @returns {any}
+     */
+    getData(elementData) {
+        return elementData[this.name];
+    }
+
+    /**
      * Deserialize element
      * @param {SrzElement} element 
      * @description The class is responsible for using the data in element to construct an appropriate value for element
      */
     onDsrz(element) {
-        throw Error('Not implemented');
+        const fieldData = element.data[this.name];
+        if (fieldData == undefined) {
+            if (this.hasValue(element.value))
+                return;
+            else if (!this.required)
+                return;
+            else
+                throw new SrzFormatError(`Missing field ${this.name}`);
+        }
+
+        processElement(element, this, fieldData);
     }
 }
 
@@ -134,10 +244,10 @@ export class Serializer {
         if (value instanceof SrzClass)
             return value;
 
-        if (value['constructor'] !== undefined)
-            return new DefaultSrzClass(null, value);
+        if (isTypeClass(value))
+            return new DefaultSrzClass(value);
             
-        throw Error('Invalid type');
+        throw new Error('Invalid type');
     }
 
     #findClass(value) {
@@ -197,6 +307,12 @@ export class Serializer {
         return this.#addClass(value);
     }
 
+    addClasses(values) {
+        for (const value of values) {
+            this.addClass(value);
+        }
+    }
+
     get defaultClass() {
         return this._defaultClass;
     }
@@ -216,7 +332,7 @@ export class Serializer {
         } else if (name instanceof Function) {
             return this.#findConstructor(name);
         } else {
-            throw Error('Unsupported name');
+            throw new Error('Unsupported name');
         }
     }
 
@@ -228,7 +344,7 @@ export class Serializer {
     clone(obj) {
         const c = this.getClassOf(obj);
         if (!c)
-            throw Error('Unknown type');
+            throw new Error('Unknown type');
 
         return c.newClone(this, obj);
     }
@@ -270,7 +386,11 @@ function leaseElementPool(environment) {
     return environment._elementPool.pop() ?? new SrzElement(environment);
 }
 
-
+export class SrzFormatError extends Error {
+    constructor(message, ...args) {
+        super(message, ...args);
+    }
+}
 
 
 
@@ -345,6 +465,22 @@ export class SrzElement {
         this._value = value;
         this._initValue = true;
     }
+    
+
+    initializeDefaultValue() {
+        if (this._initValue)
+            return;
+
+        this.value = this.srzClass.newEmpty();
+    }
+
+    clearValue() {
+        if (this._initValue)
+            return;
+
+        this._initValue = false;
+        this.value = undefined;
+    }
 
 
 
@@ -357,40 +493,61 @@ export class SrzElement {
     }
 }
   
-function initializeElement(element, parent, name, field, srzClass, data) {
+function initializeElement(element, parent, name, srzField, srzClass, data) {
     element._parent = parent;
     element._name = name;
-    element._field = field;
+    element._srzField = srzField;
     element._srzClass = srzClass;
     element._data = data;
     element._initValue = false;
     element._value = undefined;
 }
 
-export function initializeDefaultValue(element) {
-    if (element._initValue)
-        return;
 
-    element.value = element.srzClass.newEmpty();
-}
 
 export class PrimitiveSrzClass extends SrzClass {
-    constructor() {
-        super('primitive', Object);
+    static default = (() => {
+        const d = new PrimitiveSrzClass([
+            "undefined",
+            "symbol",
+            "object",
+            "string",
+            "number",
+            "boolean",
+            "bigint"
+        ]);
+        return d;
+    })();
+
+    /**
+     * 
+     * @param {string|string[]} types 
+     */
+    constructor(types) {
+        super(Object, {name:'primitive'});
+        if (types instanceof Array)
+            this._types = types;
+        else if (typeof types == 'string')
+            this._types = [types];
+        else
+            throw new Error('Invalid argument');
     }
 
     newEmpty() {
-        throw Error('Not supported');
+        throw new Error('Not supported');
     }
 
     onDsrz(element) {
+        if (this._types.indexOf(typeof element.data) < 0)
+            throw new SrzFormatError("Element was not in list of types");
+
         element.value = element.data;
     }
 }
 
 export class ArraySrzClass extends SrzClass {
     constructor(elementType) {
-        super(`{innerType.name}[]`, Array);
+        super(Array, {name:`${innerType.name}[]`});
         this._elementType = elementType;
     }
 
@@ -403,7 +560,10 @@ export class ArraySrzClass extends SrzClass {
     }
 
     onDsrz(element) {
-        initializeDefaultValue(element);
+        if (!(element.data instanceof Array))
+            throw new SrzFormatError('Expected array');
+
+        element.initializeDefaultValue();
 
         element.dataKeys.forEach(k => {
             const v = element.data[k];
@@ -415,10 +575,9 @@ export class ArraySrzClass extends SrzClass {
 
 
 
-class DefaultSrzClass extends SrzClass {
+export class DefaultSrzClass extends SrzClass {
     static default = (() => {
-        const d = new DefaultSrzClass("Unknown", Object);
-        d._isDefault = true;
+        const d = new DefaultSrzClass(Object, {name:"unknown", allowAnyField: true, isDefault:true});
         return d;
     })();
 
@@ -439,12 +598,26 @@ class DefaultSrzClass extends SrzClass {
         return fields;
     }
 
-    constructor(name, type) {
-        name ??= type.name;
+    constructor(type, options = null) {
+        var optCpy = {};
+        Object.assign(optCpy, options);
+        type ??= Object;
+        optCpy.name ??= type.name;
 
-        const fields = DefaultSrzClass.#enumFields(type);
+        optCpy.fields = DefaultSrzClass.#enumFields(type);
 
-        super(name, type, fields);
+        super(type, optCpy);
+        this._allowAnyField = false;
+
+        if (typeof optCpy.allowAnyField == 'boolean')
+            this._allowAnyField = optCpy.allowAnyField;
+
+        if (typeof optCpy.isDefault == 'boolean')
+            this._isDefault = optCpy.isDefault;
+    }
+
+    get allowAnyField() {
+        return this._allowAnyField;
     }
 
     getField(name) {
@@ -453,13 +626,13 @@ class DefaultSrzClass extends SrzClass {
 
     newEmpty() {
         if (this._isDefault === true)
-            throw Error("Unknown class type");
+            throw new Error("Unknown class type");
 
         return super.newEmpty();
     }
 
     onDsrz(element) {
-        initializeDefaultValue(element);
+        element.initializeDefaultValue();
 
         element.dataKeys.forEach(k => {
             const v = element.data[k];
@@ -469,18 +642,73 @@ class DefaultSrzClass extends SrzClass {
     }
 }
 
-class DefaultSrzField extends SrzField {
+export class DefaultSrzField extends SrzField {
 
     constructor(name) {
         super(name, DefaultSrzClass.default);
     }
 }
 
+
+export class SrzVariantError extends SrzFormatError {
+    constructor(message, innerErrors, ...args) {
+        super(message, ...args);
+        this._innerErrors = innerErrors;
+    }
+
+    get innerErrors() {
+        return this._innerErrors;
+    }
+    
+    set innerErrors(value) {
+        this._innerErrors = value;
+    }
+}
+
+export class VariantSrzClass extends SrzField {
+    
+    /**
+     * @param {String} name 
+     * @param {Function} type 
+     * @param {SrzClass[]} variants 
+     */
+    constructor(name, type, variants) {
+        name ??= type.name;
+
+        super(name, type, []);
+        
+        this._variants = variants;
+    }
+
+    onDsrz(element) {
+        element.dataKeys.forEach(k => {
+            var errors = [];
+
+            for (const v of this._variants) {
+                try {
+                    element.clearValue();
+                    v.onDsrz(element);
+
+                    return;
+                } catch (error) {
+                    if (!(error instanceof SrzFormatError))
+                        throw error;
+                    errors.push(error);
+                }
+            }
+
+            throw new SrzVariantError(`None of the variants for ${this._name} matched`, errors);
+        });
+    }
+}
+
+
+
 class RootSrzClass extends SrzClass {
     static default = new RootSrzClass();
 
     constructor() {
-        super("root", null, []);
+        super(RootSrzClass, {name:'root'});
     }
 
 
@@ -488,7 +716,7 @@ class RootSrzClass extends SrzClass {
         const inEl = loadElement(parent, null, data);
 
         if (!inEl.name)
-            throw Error('Missing name on root element');
+            throw new SrzFormatError('Missing name on root element');
 
         enterElement(inEl);
 
@@ -501,17 +729,17 @@ class RootSrzClass extends SrzClass {
         } else if (el.data instanceof Object) {
             this.#processSingle(el, el.data);
         } else {
-            throw Error('Not supported');
+            throw new SrzFormatError('Not supported');
         }
     }
 
 
     getField(name) {
-        return new RootSrzField(name);
+        return new RootSrzField(name); // TODO Cache?
     }
 
     newEmpty() {
-        throw Error('Not supported');
+        throw new SrzFormatError('Not supported');
     }
 }
 
@@ -520,15 +748,22 @@ class RootSrzField extends SrzField {
         super(name, null);
     }
 
+    getValue(target) {
+        if (!(target instanceof SrzEnvironment))
+            throw new SrzFormatError('Target was not environment');
+
+        target.getValue(this.name);
+    }
+
     setValue(target, fieldValue) {
         if (!(target instanceof SrzEnvironment))
-            throw Error('Target was not environment');
+            throw new SrzFormatError('Target was not environment');
 
         addResult(target, this.name, fieldValue);
     }
     
     onDsrz(element) {
-        throw Error('Not implemented');
+        throw new SrzFormatError('Not implemented');
     }
 }
 
@@ -561,15 +796,19 @@ function loadElement(parent, field, data) {
     }
 
     if (!(type instanceof SrzClass))
-        throw Error("Could not determine element type");
+        throw new Error("Could not determine element type");
 
     const el = leaseElementPool(parent.environment);
 
-
-    const dataCpy = {... data};
-    delete dataCpy['$name'];
-    delete dataCpy['$type'];
-    delete dataCpy['$inherit'];
+    var dataCpy;
+    if (typeof data == 'object') {
+        dataCpy = {... data};
+        delete dataCpy['$name'];
+        delete dataCpy['$type'];
+        delete dataCpy['$inherit'];
+    } else {
+        dataCpy = data;
+    }
 
     initializeElement(el, parent, name, field, type, dataCpy);
     
@@ -584,16 +823,16 @@ function enterElement(element) {
     element.srzClass.onDsrz(element);
 }
 
-function releaseElement(element) {
+function releaseElement(environment, element) {
     initializeElement(element);
-    returnElementPool(element);
+    returnElementPool(environment, element);
 }
 
 export function writeBackElement(element) {
-    if (!element.field)
-        throw Error("No field associated with element");
+    if (!element.srzField)
+        throw new Error("No field associated with element");
 
-    element.field.setValue(element.parent.value, element.value);
+    element.srzField.setValue(element.parent.value, element.value);
 }
 
 export function processElement(parent, field, data) {
@@ -611,7 +850,7 @@ export function deserialize(serializer, json) {
     else if (serializer instanceof Serializer)
         environment = new SrzEnvironment(serializer);
     else
-        throw Error('Serializer was not a serializer');
+        throw new Error('Serializer was not a serializer');
 
     var rootEl = leaseElementPool(environment);
 

@@ -36,7 +36,7 @@ export class VecNoise {
         var res = c0 * (1 - ry) + c1 * ry;
 
         // if (res < -1 || res > 1)
-        //     throw Error();
+        //     throw new Error();
         return res;
     }
 

@@ -1,8 +1,8 @@
 
 export const button = document.querySelector('#btn-gen-message');
 if (button == null)
-    throw Error('Missing generator button');
+    throw new Error('Missing generator button');
 
 export const messageField = document.querySelector('#message-field');
 if (messageField == null)
-    throw Error('Missing message field');
+    throw new Error('Missing message field');

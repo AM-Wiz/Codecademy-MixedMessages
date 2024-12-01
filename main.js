@@ -57,16 +57,20 @@ button.addEventListener('click', async (e) => {
 }
 
 
-import { deserialize, Serializer } from './modules/Deserializer.js';
+import { deserialize, PrimitiveSrzClass, Serializer, SrzClass } from './modules/Deserializer.js';
 
 {
     class TestClass {
         constructor() {
-            this._valueA = null;
-            this._valueB = null;
+            
         }
 
         valueC = null;
+        
+        _valueA = null;
+        _valueB = null;
+        _valueD = null;
+        _valueE = null;
 
         get valueA() {
             return this._valueA;
@@ -83,6 +87,14 @@ import { deserialize, Serializer } from './modules/Deserializer.js';
         set valueB(value) {
             this._valueB = value;
         }
+        
+        get valueE() {
+            return this._valueE;
+        }
+
+        set valueE(value) {
+            this._valueE = value;
+        }
     }
 
 
@@ -91,6 +103,7 @@ import { deserialize, Serializer } from './modules/Deserializer.js';
             "$name": "A",
             "$type": "TestClass",
             "valueA": 5,
+            "valueE": {"x": 5.5, "y": 6},
         },
         {
             "$name": "B",
@@ -100,9 +113,18 @@ import { deserialize, Serializer } from './modules/Deserializer.js';
     ];
 
     const testSrz = new Serializer();
-    testSrz.classes = [
-        TestClass
-    ];
+    testSrz.addClasses([
+        new SrzClass(TestClass, {
+            fields: [
+                {name:"valueA", class: new PrimitiveSrzClass('number')},
+                {name:"valueB", class: new PrimitiveSrzClass('string'), required: false},
+                {name:"valueC", class: new PrimitiveSrzClass('boolean'), required: false},
+                {name:"valueE", class: new PrimitiveSrzClass('object')},
+            ]
+        })
+    ]);
+
+    console.log(testSrz);
 
     const result = deserialize(testSrz, testJson);
 

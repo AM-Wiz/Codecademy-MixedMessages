@@ -21,7 +21,7 @@ function msgFormatterWith(fields) {
             const defaultValue = f['default'];
 
             if (typeof srcName !== 'string')
-                throw Error(`Invalid field format ${f}`);
+                throw new Error(`Invalid field format ${f}`);
 
             let fv = v[srcName];
 
@@ -36,7 +36,7 @@ function msgFormatterWith(fields) {
                 if (fv == defaultValue && defaultValue === undefined && Object.hasOwn(fv, 'default')) {
                     // Value is missing, but we have an explicitly undefined 'default', so ignore
                 } else
-                    throw Error(`Invalid or missing field ${srcName} on ${v}`);
+                    throw new Error(`Invalid or missing field ${srcName} on ${v}`);
             }
             
             if (fv === undefined)
@@ -54,7 +54,7 @@ async function loadPropMsg(path, formatter) {
 
     const msgsRaw = await loadJSONRelative(path);
     if (Array.isArray(msgsRaw) !== true)
-        throw Error('Invalid message data format');
+        throw new Error('Invalid message data format');
 
     msgsRaw.forEach((v) => {
         const {wgt, data} = formatter(v);
@@ -71,7 +71,7 @@ function toneFormatter(v) {
     else if (Array.isArray(v))
         return v;
     else
-        throw Error(`Invalid tone type ${v}`);
+        throw new Error(`Invalid tone type ${v}`);
 }
 
 const stdMsgFormatter = msgFormatterWith([
@@ -103,7 +103,7 @@ const toneMap = await (async () => {
         const {first, second, wgt} = p;
 
         if (typeof first !== 'string' || typeof second !== 'string' || !(wgt > 0))
-            throw Error(`Invalid message weight-pair ${p}`);
+            throw new Error(`Invalid message weight-pair ${p}`);
 
         map.set(makeToneMapKey(first, second), wgt);
         map.set(makeToneMapKey(second, first), wgt);
@@ -152,7 +152,7 @@ const tones = await (async () => {
     const tonesRaw = await loadJSONRelative('./data/message-tones.json');
 
     if (!Array.isArray(tonesRaw))
-        throw Error("Invalid tone format");
+        throw new Error("Invalid tone format");
 
     return tonesRaw;
 })();

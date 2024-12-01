@@ -10,7 +10,7 @@ export function Vec(x) {
     } else if (Array.isArray(x)) {
         return x;
     } else {
-        throw Error(`Invalid input ${x} to Vec constructor`);
+        throw new Error(`Invalid input ${x} to Vec constructor`);
     }
 }
 
@@ -57,7 +57,7 @@ export function vecAdd(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] + b[i];
     } else
-        throw Error('Invalid input to vector add');
+        throw new Error('Invalid input to vector add');
     
     return dst;
 }
@@ -75,7 +75,7 @@ export function vecSub(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] - b[i];
     } else
-        throw Error('Invalid input to vector subtract');
+        throw new Error('Invalid input to vector subtract');
     
     return dst;
 }
@@ -93,7 +93,7 @@ export function vecMul(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] * b[i];
     } else
-        throw Error('Invalid input to vector multiply');
+        throw new Error('Invalid input to vector multiply');
     
     return dst;
 }
@@ -111,7 +111,7 @@ export function vecDiv(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] / b[i];
     } else
-        throw Error('Invalid input to vector divide');
+        throw new Error('Invalid input to vector divide');
     
     return dst;
 }
@@ -129,7 +129,7 @@ export function vecMod(a, b, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] % b[i];
     } else
-        throw Error('Invalid input to vector modulo');
+        throw new Error('Invalid input to vector modulo');
     
     return dst;
 }
@@ -189,7 +189,7 @@ export function vecLerp(a, b, x, dst=undefined) {
         for (let i = 0; i < dst.length; i++)
             dst[i] = a[i] * (1 - x) + b[i] * x;
     } else
-        throw Error('Invalid input to vector modulo');
+        throw new Error('Invalid input to vector modulo');
     
     return dst;
 }
