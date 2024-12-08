@@ -1,95 +1,85 @@
+import { ArraySrzClass, deserialize, PrimitiveSrzClass, Serializer, SrzClass } from "./modules/Deserializer.js";
 import { WeightMap } from "./modules/WeightMap.js";
 import { loadJSONRelative } from './modules/utilities.js';
 
-function msgFormatterWith(fields) {
-    return (v) => {
-        let w = v['wgt'] || 1;
-
-        const res = { };
-
-        fields.forEach(f => {
-            if (typeof f === 'string') {
-                res[f] = v[f];
-
-                return;
-            }
-
-            const name = f['name'];
-            const srcName = f['srcName'] || name;
-            const fType = f['type'];
-            const customSelector = f['customSelector'];
-            const defaultValue = f['default'];
-
-            if (typeof srcName !== 'string')
-                throw new Error(`Invalid field format ${f}`);
-
-            let fv = v[srcName];
-
-            if (fv !== undefined && typeof customSelector === 'function')
-                fv = customSelector(fv);
-
-            if (fv === undefined)
-                fv = defaultValue;
-
-
-            if (fType !== undefined && typeof fv !== fType) {
-                if (fv == defaultValue && defaultValue === undefined && Object.hasOwn(fv, 'default')) {
-                    // Value is missing, but we have an explicitly undefined 'default', so ignore
-                } else
-                    throw new Error(`Invalid or missing field ${srcName} on ${v}`);
-            }
-            
-            if (fv === undefined)
-                return;
-                
-            res[name] = fv; 
-        });
-
-        return {wgt: w, data: res };
-    }
-}
-
-async function loadPropMsg(path, formatter) {
+async function loadPropMsg(path, serializer) {
     const dst = new WeightMap();
 
-    const msgsRaw = await loadJSONRelative(path);
-    if (Array.isArray(msgsRaw) !== true)
-        throw new Error('Invalid message data format');
-
-    msgsRaw.forEach((v) => {
-        const {wgt, data} = formatter(v);
-        dst.add(wgt, data);
-    });
-
+    const env = deserialize(serializer, await loadJSONRelative(path));
+    for (var v of Object.values(env.valueCollection))
+        dst.add(v.wgt, v);
+    
     return dst;
 }
 
 
-function toneFormatter(v) {
-    if (typeof v === 'string')
-        return [v];
-    else if (Array.isArray(v))
-        return v;
-    else
-        throw new Error(`Invalid tone type ${v}`);
+
+export class MessageBase {
+    _msg=undefined;
+    _tone=undefined;
+    _theme=undefined;
+    _wgt=1;
+
+    get msg() { return this._msg; }
+    set msg(value) { this._msg = value; }
+    
+    get tone() { return this._tone; }
+    set tone(value) { this._tone = value; }
+    
+    get theme() { return this._theme; }
+    set theme(value) { this._theme = value; }
+    
+    get wgt() { return this._wgt; }
+    set wgt(value) { this._wgt = value; }
 }
 
-const stdMsgFormatter = msgFormatterWith([
-    {name: 'msg', type: 'string'},
-    {name: 'tone', customSelector: toneFormatter, default: []},
-]);
+export class FortMessage extends MessageBase {
+}
+
+export class PromptMessage extends MessageBase {
+    _before=false;
+    _after=false;
+
+    get before() { return this._before; }
+    set before(value) { this._before = value; }
+
+    get after() { return this._after; }
+    set after(value) { this._after = value; }
+}
+
+const {messages, generatorDuringMsgs, generatorIdleMsgs} = await (async () => {
+    const fortSrz = new Serializer();
+
+    fortSrz.defaultClass = new SrzClass(FortMessage, {
+        fields: [
+            {name:'msg', class:new PrimitiveSrzClass('string')},
+            {name:'tone', class:new ArraySrzClass(new PrimitiveSrzClass('string'))},
+            {name:'wgt', class:new PrimitiveSrzClass('number'), required:false},
+        ],
+    });
+    
+    const promptSrz = new Serializer();
+
+    promptSrz.defaultClass = new SrzClass(PromptMessage, {
+        fields: [
+            {name:'msg', class:new PrimitiveSrzClass('string')},
+            {name:'tone', class:new ArraySrzClass(new PrimitiveSrzClass('string'))},
+            {name:'wgt', class:new PrimitiveSrzClass('number'), required:false},
+            {name:'before', class:new PrimitiveSrzClass('boolean'), required:false},
+            {name:'after', class:new PrimitiveSrzClass('boolean'), required:false},
+        ],
+    });
+    
+    const msgs = loadPropMsg('./data/messages.json', fortSrz);
+
+    const gdmsgs = loadPropMsg('./data/gen-during-messages.json', promptSrz);
+    
+    const gimsgs = loadPropMsg('./data/gen-idle-messages.json', promptSrz);
+
+    return {messages: await msgs, generatorDuringMsgs: await gdmsgs, generatorIdleMsgs: await gimsgs};
+})();
 
 
-const btnMsgFormatter = msgFormatterWith([
-    {name: 'msg', type: 'string'},
-    {name: 'tone', customSelector: toneFormatter, default: []},
-    {name: 'before', type: 'boolean', default: false},
-    {name: 'after', type: 'boolean', default: false},
-]);
-
-const messages = await loadPropMsg('./data/messages.json', stdMsgFormatter);
-const generatorDuringMsgs = await loadPropMsg('./data/gen-during-messages.json', stdMsgFormatter);
-const generatorIdleMsgs = await loadPropMsg('./data/gen-idle-messages.json', btnMsgFormatter);
 
 
 function makeToneMapKey(first, second) { return `${first}+${second}`; }

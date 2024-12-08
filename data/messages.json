@@ -54,7 +54,7 @@
     {
         "msg": "You have made a powerful enemy.",
         "wgt": 0.3,
-        "tone": ["mysterious", "ominous", "signs"]
+        "tone": ["mysterious", "ominous", "signs", "blame"]
     },
     {
         "msg": "Behind you!",
@@ -65,6 +65,11 @@
         "msg": "Check behind the towel holder.",
         "wgt": 0.3,
         "tone": ["mysterious", "ominous", "disturbing", "watched"]
+    },
+    {
+        "msg": "You don't know what you've done",
+        "wgt":0.2,
+        "tone": ["mysterious", "ominous", "disturbing", "blame"]
     },
     {
         "msg": "Did you see it?",

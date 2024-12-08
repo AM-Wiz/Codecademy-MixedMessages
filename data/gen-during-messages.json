@@ -11,7 +11,7 @@
     },
     {
         "msg": "Oh you're in for it now...",
-        "tone": "ominous",
+        "tone": ["ominous"],
         "wgt": 0.1
     },
     {

@@ -370,9 +370,11 @@ export class Serializer {
 export class SrzEnvironment {
     constructor(serializer) {
         this._serializer = serializer;
-        this._collection = {};
-        this._elementPool = [];
     }
+
+    _collection = {};
+    _elementPool = [];
+    _nextAnonId = 0;
 
     get serializer() {
         return this._serializer;
@@ -388,7 +390,18 @@ export class SrzEnvironment {
     }
 }
 
+/**
+ * 
+ * @param {SrzEnvironment} environment 
+ * @param {string | null} name 
+ * @param {any} value 
+ */
 function addResult(environment, name, value) {
+    if (!name) {
+        do { name = `<anon#${environment._nextAnonId++}>`; }
+        while(name in environment._collection)
+    }
+
     environment._collection[name] = value;
 }
 
@@ -778,8 +791,8 @@ class RootSrzClass extends SrzClass {
     #processSingle(parent, data) {
         const inEl = loadElement(parent, null, null, data);
 
-        if (!inEl.name)
-            throw new SrzFormatError('Missing name on root element');
+        // if (!inEl.name)
+        //     throw new SrzFormatError('Missing name on root element');
 
         enterElement(inEl);
 

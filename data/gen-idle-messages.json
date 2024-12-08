@@ -1,19 +1,31 @@
 [
     {
         "msg": "I hope you will be able to live with yourself...",
-        "tone": ["melancholy", "ominous"],
-        "wgt": 0.2,
+        "tone": ["melancholy", "ominous", "blame"],
+        "wgt": 0.1,
         "before": true, "after": true
     },
     {
         "msg": "Was it worth it?",
         "tone": ["melancholy", "ominous"],
+        "wgt": 0.3,
+        "after": true
+    },
+    {
+        "msg": "Do you know what that means?",
+        "tone": ["mysterious"],
+        "wgt": 0.5,
+        "after": true
+    },
+    {
+        "msg": "Do you know what that is referring to?",
+        "tone": ["mysterious"],
         "wgt": 0.5,
         "after": true
     },
     {
         "msg": "Maybe your luck will fare better this time?",
-        "tone": "melancholy",
+        "tone": ["melancholy"],
         "wgt": 0.5,
         "after": true
     },
@@ -30,11 +42,13 @@
     {
         "msg": "What could possibly go wrong?",
         "tone": ["excited", "hopeful", "fortune"],
+        "wgt":0.2,
         "before": true
     },
     {
         "msg": "What else could possibly go wrong?",
         "tone": ["melancholy", "excited", "hopeful", "fortune"],
+        "wgt":0.2,
         "after": true
     },
     {

@@ -49,5 +49,11 @@
     { "first": "silly", "second": "hopeful", "wgt": 1.1},
     { "first": "silly", "second": "excited", "wgt": 1.1},
     { "first": "silly", "second": "ominous", "wgt": 0.2},
-    { "first": "silly", "second": "disturbing", "wgt": 0.1}
+    { "first": "silly", "second": "disturbing", "wgt": 0.1},
+
+
+    { "first": "blame", "second": "blame", "wgt": 1},
+    { "first": "blame", "second": "ominous", "wgt": 1.2},
+    { "first": "blame", "second": "watched", "wgt": 1.5},
+    { "first": "blame", "second": "disturbing", "wgt": 2}
 ]
