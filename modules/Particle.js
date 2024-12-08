@@ -1,7 +1,9 @@
 import { getElementPosition, setElementPosition } from "./utilities.js";
-import { Vec, vecAdd, vecMul, vecCpy, vecSub } from "./vectors.js";
+import { Vec, IsVec, vecAdd, vecMul, vecCpy, vecSub } from "./vectors.js";
 
-
+/**
+ * The set of particle states
+ */
 const PStates = {
     initial: '0ini',
     adding: '1add',
@@ -10,6 +12,9 @@ const PStates = {
     dead: '4ded',
 };
 
+/**
+ * The set of context states
+ */
 const CStates = {
     idle: '0idl',
     updatingParticles: '1upp',
@@ -82,7 +87,9 @@ class CEffectList {
     }
 }
 
-
+/**
+ * Represents a particle simulation
+ */
 export class ParticleContext {
     constructor(frame) {
         this._frame = frame;
@@ -122,7 +129,9 @@ export class ParticleContext {
     }
 }
 
-
+/**
+ * Represents a coordinate system against which particles are animate
+ */
 export class ParticleAnchor {
     constructor(context, element, offset=null) {
         this._context = context;
@@ -156,6 +165,9 @@ export class ParticleAnchor {
     }
 }
 
+/**
+ * A logical particle display layer
+ */
 export class ParticleLayer { // TODO implement
     constructor(context, element) {
         this._context = context;
@@ -185,38 +197,87 @@ export class ParticleLayer { // TODO implement
     }
 }
 
+
+export class ParticleLayout {
+    constructor(options) {
+        this._content = options.content ?? null;
+        this._effects = options.effects ?? [];
+        this._maxLifetime = options.maxLifetime ?? null;
+    }
+
+    /**
+     * @returns {ParticleContent}
+     */
+    get content() { return this._content; }
+    set content(value) { this._content = value; }
+    /**
+     * @returns {ParticleEffect[]}
+     */
+    get effects() { return this._effects; }
+    set effects(value) { this._effects = value; }
+    /**
+     * @returns {number}
+     */
+    get maxLifetime() { return this._maxLifetime; }
+    set maxLifetime(value) { this._maxLifetime = value; }
+}
+
+
+/**
+ * Represents a single particle with a set of effects
+ */
 export class Particle {
-    constructor(layer, content, lifetime=null, anchor=null) {
+    /**
+     * 
+     * @param {ParticleLayer} layer 
+     * @param {any} options 
+     */
+    constructor(layer, options) {
         this._position = Vec(2);
         this._globalPosition = Vec(2);
         this._velocity = Vec(2);
-        this._anchor = anchor;
+        this._anchor = options.anchor ?? null;
         
         this._effects = [];
 
-        this._maxLifetime = lifetime;
+        this._maxLifetime = options.maxLifetime ?? options.layout?.maxLifetime ?? null;
         this._lifetime = 0;
 
         this._layer = layer;
         this._context = null;
         this.state = PStates.initial;
         
-        this._content = content;
+        this._content = options.content ?? options.layout?.content ?? content;
         this._element = null;
+
+        if (options.effects) {
+            for (var ef of options.effects)
+                this.addEffect(ef);
+        }
+        
+        if (options.layout?.effects) {
+            for (var ef of options.layout.effects)
+                this.addEffect(ef);
+        }
     }
 
-
+    /**
+     * @returns {number}
+     */
     get lifetime() {
         return this._lifetime;
     }
     
     /** @summary The maximum lifetime of the particle
-     *  @returns A positive non-zero number indicating the lifetime, or null if the particle is immortal
+     *  @returns {number} A positive non-zero number indicating the lifetime, or null if the particle is immortal
      */
     get maxLifetime() {
         return this._maxLifetime;
     }
 
+    /**
+     * @returns {number}
+     */
     get lifetimeElapsed() {
         if (this._maxLifetime === null)
             return 0;
@@ -234,6 +295,9 @@ export class Particle {
         return this._anchor.toGlobal(value, dst);
     }
 
+    /**
+     * @returns {number[]}
+     */
     get position() {
         return this._position;
     }
@@ -243,6 +307,9 @@ export class Particle {
         this.#posToGlob(this._position, this._globalPosition);
     }
     
+    /**
+     * @returns {number[]}
+     */
     get globalPosition() {
         this.#posToGlob(this._position, this._globalPosition);
         return this._globalPosition;
@@ -255,6 +322,9 @@ export class Particle {
     
 
 
+    /**
+     * @returns {number[]}
+     */
     get velocity() {
         return this._velocity;
     }
@@ -264,6 +334,9 @@ export class Particle {
     }
     
 
+    /**
+     * @returns {ParticleEffect[]}
+     */
     get effects() {
         return this._effects;
     }
@@ -293,78 +366,145 @@ export class Particle {
 
 
 
+    /**
+     * @returns {ParticleContent}
+     */
     get elementContent() {
         return this._element.childNodes[0];
     }
 }
 
 
-
+/**
+ * Can animate the transform of a particle
+ */
 export class ParticleEffect {
     constructor() {
 
     }
 
+    /**
+     * Called at the beginning of effect evaluation
+     * @param {ParticleContext} context 
+     * @param {Particle[]} particles 
+     */
     before(context, particles) {
 
     }
 
+    /**
+     * Called before velocity is calculated
+     * @param {ParticleContext} context 
+     * @param {Particle[]} particles 
+     */
     beforeVel(context, particles) {
 
     }
 
+    /**
+     * Called before the particles have had their effects applied
+     * @param {ParticleContext} context 
+     * @param {Particle[]} particles 
+     */
     beforeApply(context, particles) {
 
     }
 
+    /**
+     * Called after effect evaluation
+     * @param {ParticleContext} context 
+     * @param {Particle[]} particles 
+     */
     after(context, particles) {
 
     }
 }
 
-
+/**
+ * The content of a particle that is displayed
+ */
 export class ParticleContent {
-    constructor(initial = {}) {
-        this._dimensions = Vec([50, 50]);
-        this._text = undefined;
-        this._html = undefined;
+    constructor(options = {}) {
+        if (IsVec(options.dimensions, 2))
+            this._dimensions = vecCpy(options.dimensions);
+        else
+            this._dimensions = Vec([50, 50]);
 
-        this._effects = [];
+        if (typeof options.text == 'string')
+            this._text = options.text;
+        else
+            this._text = undefined;
 
-        for (const k in initial) {
-            this[k] = initial[k];
-        }
+        if (typeof options.html == 'string')
+            this._html = options.html;
+        else
+            this._html = undefined;
+        
+        if (Array.isArray(options.cssClasses))
+            this._cssClasses = options.cssClasses;
+        else
+            this._cssClasses = [];
+        
+        if (Array.isArray(options.effects))
+            this._effects = options.effects;
+        else
+            this._effects = [];
     }
 
+    /**
+     * @returns {number[]} 
+     */
     get dimensions() { return this._dimensions; }
     
     set dimensions(value) {
         vecCpy(value, this._dimensions);
     }
 
+    /**
+     * @returns {string} 
+     */
     get text() { return this._text; }
     set text(value) {
         this._text = value;
         this._html = undefined;
     }
     
+    /**
+     * @returns {string} 
+     */
     get html() { return this._html; }
     set html(value) {
         this._html = value;
         this._text = undefined;
     }
 
+
+    /**
+     * @returns {string[]}
+     */
+    get cssClasses() { return this._cssClasses; }
+    set cssClasses(values) {
+        if (!Array.isArray(values))
+            throw new Error('Invalid class array');
+        values = [...values];
+
+        this._cssClasses = values
+    }
+
     
+    /**
+     * @returns {ParticleContentEffect[]} 
+     */
     get effects() {
         return this._effects;
     }
     
-    set effects(value) {
-        if (!Array.isArray(value))
+    set effects(values) {
+        if (!Array.isArray(values))
             throw new Error('Invalid effects array');
-        value = Array.from(value);
+        values = [...values];
 
-        this._effects = value;
+        this._effects = values;
     }
 
 
@@ -383,12 +523,19 @@ export class ParticleContent {
     }
 }
 
-
+/**
+ * Can animate the content of a particle
+ */
 export class ParticleContentEffect {
     constructor() {
 
     }
 
+    /**
+     * Apply the content effect to `particles`
+     * @param {ParticleContext} context 
+     * @param {Particle[]} particles 
+     */
     apply(context, particles) {
 
     }
@@ -396,7 +543,13 @@ export class ParticleContentEffect {
 
 
 
-
+/**
+ * Update the the position of a particle `Element`
+ * @param {ParticleContext} context 
+ * @param {ParticleAnchor} anchor 
+ * @param {Element} element 
+ * @param {number[]} position 
+ */
 function updateElementPos(context, anchor, element, position) {
     let eP = vecCpy(position);
     
@@ -413,9 +566,16 @@ function updateElementPos(context, anchor, element, position) {
     setElementPosition(context._frame, element, eP);
 }
 
-
+/**
+ * The name of the particle body css class
+ */
 const particleBodyClass = 'particle-container';
 
+/**
+ * Create an element for `particle`
+ * @param {ParticleContext} context 
+ * @param {Particle} particle 
+ */
 function createElement(context, particle) {
     const newElem = document.createElement('div');
     newElem.classList.add(particleBodyClass);
@@ -423,10 +583,18 @@ function createElement(context, particle) {
     let dimensions;
     // newElem.style.backgroundColor = 'red';
     if (particle._content) {
-        if (particle._content.text !== undefined)
-            newElem.innerText = particle._content.text;
-        else if (particle._content.html !== undefined)
+        if (particle._content.text !== undefined) {
+            const innerDiv = document.createElement('div');
+            innerDiv.textContent = particle._content.text;
+            newElem.appendChild(innerDiv);
+        } else if (particle._content.html !== undefined) {
             newElem.innerHTML = particle._content.html;
+        }
+
+        if (particle._content.cssClasses) {
+            newElem.firstElementChild.classList.add(... particle._content.cssClasses);
+        }
+
         dimensions = particle._content.dimensions;
     } else {
         dimensions = [50, 50];
@@ -441,6 +609,11 @@ function createElement(context, particle) {
     context._frame.appendChild(newElem);
 }
 
+/**
+ * Destroy the element corresponding to `particle`
+ * @param {ParticleContext} context 
+ * @param {Particle} particle 
+ */
 function destroyElement(context, particle) {
     if (particle._element === undefined)
         return;
@@ -448,11 +621,20 @@ function destroyElement(context, particle) {
     particle._element = undefined;
 }
 
+/**
+ * Update the element corresponding to `particle`
+ * @param {ParticleContext} context 
+ * @param {Particle} particle 
+ */
 function updateElement(context, particle) {
     updateElementPos(context, particle._anchor, particle._element, particle.position);
 }
 
 
+/**
+ * Instantiate any particles that were added to the new queue
+ * @param {ParticleContext} context 
+ */
 function addNew(context) {
     while (context.newParticles.length > 0) {
         const p = context.newParticles.pop();
@@ -467,6 +649,10 @@ function addNew(context) {
     }
 }
 
+/**
+ * Tick the life of particles
+ * @param {ParticleContext} context 
+ */
 function tickLife(context) {
     for (let i = 0; i < context.particles.length; i++) {
         const p = context.particles[i];
@@ -478,6 +664,10 @@ function tickLife(context) {
     }
 }
 
+/**
+ * Remove any particles that have been marked for disposal
+ * @param {ParticleContext} context 
+ */
 function removeOld(context) {
     while (context.dyingParticles.length > 0) {
         const p = context.dyingParticles.pop();
@@ -493,6 +683,10 @@ function removeOld(context) {
     }
 }
 
+/**
+ * Prepare particle effects for simulation
+ * @param {ParticleContext} context 
+ */
 function processEffects(context) {
     context._pEffectScratch.reset();
 
@@ -505,7 +699,11 @@ function processEffects(context) {
     }
 }
 
-function simulate(context) {
+/**
+ * Simulate particles effects
+ * @param {ParticleContext} context 
+ */
+function simulateEffects(context) {
     const tempV = Vec(2);
 
     for (const [ef, ps] of context._pEffectScratch.entries) {
@@ -524,6 +722,10 @@ function simulate(context) {
     }
 }
 
+/**
+ * Update the elements corresponding to each particle
+ * @param {ParticleContext} context 
+ */
 function updateElements(context) {
     context._cEffectScratch.reset();
 
@@ -543,7 +745,11 @@ function updateElements(context) {
     }
 }
 
-
+/**
+ * Simulate a frame for the particles in `context`
+ * @param {ParticleContext} context The particle context to simulate
+ * @param {number} timeStep The time step to simulate
+ */
 export function simulateFrame(context, timeStep) {
     if (!(context._state === CStates.idle))
         throw new Error('Invalid operation');
@@ -569,7 +775,7 @@ export function simulateFrame(context, timeStep) {
 
     context._state = CStates.simulating;
     try {
-        simulate(context);
+        simulateEffects(context);
     } catch (e) {
         context._state = CStates.idle;
         throw e;

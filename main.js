@@ -56,7 +56,7 @@ button.addEventListener('click', async (e) => {
     button.innerHTML = genMsg.msg;
 }
 
-
+/*
 import { deserialize, PrimitiveSrzClass, Serializer, SrzClass } from './modules/Deserializer.js';
 
 {
@@ -130,6 +130,7 @@ import { deserialize, PrimitiveSrzClass, Serializer, SrzClass } from './modules/
 
     console.log(result.valueCollection);
 }
+*/
 
 // console.log(getElementPosition(document.body, particleFrame));
 // console.log(getElementPosition(document.body, button));

@@ -1,66 +1,70 @@
-[
-    {
-        "$name": "base",
-        "dimensions": [50, 50],
-        "physics-effect": [
-            {
-                "$type": "ParticleSlowEffect",
-                "amount": 1,
-                "period": 0.1
-            },
-            {
-                "$type": "ParticleFlowEffect",
-                "force": 1000,
-                "scale": 5
-            }
-        ],
-        "content-effect": [
-            { "$type": "ParticleShrinkEffect" }
-        ]
-    },
-    {
-        "$name": "base-text",
-        "$inherit": "base",
-        "css-class": ["particle-text"]
-    },
-    {
-        "$name": "question",
-        "$inherit": "base-text",
-        "text": "?"
-    },
-    {
-        "$name": "exclaim",
-        "$inherit": "base-text",
-        "text": "!"
-    },
-    {
-        "$name": "dice",
-        "$inherit": "base-text",
-        "text": "🎲"
-    },
-    {
-        "$name": "card",
-        "$inherit": "base-text",
-        "text": "🃏"
-    },
-    {
-        "$name": "eye",
-        "$inherit": "base-text",
-        "text": "👁"
-    },
-    {
-        "$name": "leaf-orange-0",
-        "$inherit": "base-text",
-        "text": "🍂"
-    },
-    {
-        "$name": "leaf-orange-1",
-        "$inherit": "base-text",
-        "text": "🍁"
-    },
-    {
-        "$name": "cloud",
-        "$inherit": "base-text",
-        "text": "☁"
-    }
-]
+{
+    "$type": "ParticleLayout",
+    "$values": [
+        {
+            "$name": "base",
+            "dimensions": [50, 50],
+            "max-lifetime": 1,
+            "physics-effect": [
+                {
+                    "$type": "ParticleSlowEffect",
+                    "amount": 1,
+                    "period": 0.1
+                },
+                {
+                    "$type": "ParticleFlowEffect",
+                    "force": 1000,
+                    "scale": 5
+                }
+            ],
+            "content-effect": [
+                { "$type": "ParticleShrinkEffect" }
+            ]
+        },
+        {
+            "$name": "base-text",
+            "$inherit": "base",
+            "css-class": ["particle-text"]
+        },
+        {
+            "$name": "question",
+            "$inherit": "base-text",
+            "content-text": "?"
+        },
+        {
+            "$name": "exclaim",
+            "$inherit": "base-text",
+            "content-text": "!"
+        },
+        {
+            "$name": "dice",
+            "$inherit": "base-text",
+            "content-text": "🎲"
+        },
+        {
+            "$name": "card",
+            "$inherit": "base-text",
+            "content-text": "🃏"
+        },
+        {
+            "$name": "eye",
+            "$inherit": "base-text",
+            "content-text": "👁"
+        },
+        {
+            "$name": "leaf-orange-0",
+            "$inherit": "base-text",
+            "content-text": "🍂"
+        },
+        {
+            "$name": "leaf-orange-1",
+            "$inherit": "base-text",
+            "content-text": "🍁"
+        },
+        {
+            "$name": "cloud",
+            "$inherit": "base-text",
+            "content-text": "☁"
+        }
+    ]
+}

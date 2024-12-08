@@ -126,6 +126,7 @@ export class SrzField {
         this._fieldClass = fieldClass;
         this._owned = false;
         this._required = true;
+        this._jsName = undefined;
 
         if (options) {
             if (typeof options.owned == 'boolean')
@@ -133,13 +134,29 @@ export class SrzField {
             
             if (typeof options.required == 'boolean')
                 this._required = options.required;
+            
+            if (typeof options.jsName == 'string')
+                this._jsName = options.jsName;
         }
+
+        this._jsName ??= this._name;
     }
 
     /**
      * The name of the field in it's parent
      */
     get name() {
+        return this._name;
+    }
+    
+    /**
+     * The name of the underlying javascript field
+     */
+    get jsName() {
+        return this._jsName;
+    }
+
+    get dataName() {
         return this._name;
     }
 
@@ -181,7 +198,7 @@ export class SrzField {
      * @returns {any} 
      */
     getValue(target) {
-        return target[this.name];
+        return target[this.jsName];
     }
 
     /**
@@ -199,7 +216,7 @@ export class SrzField {
      * @param {any} fieldValue 
      */
     setValue(target, fieldValue) {
-        target[this.name] = fieldValue;
+        target[this.jsName] = fieldValue;
     }
     
     /**
@@ -208,7 +225,7 @@ export class SrzField {
      * @returns {any}
      */
     getData(elementData) {
-        return elementData[this.name];
+        return elementData[this.dataName];
     }
 
     /**
@@ -217,7 +234,7 @@ export class SrzField {
      * @description The class is responsible for using the data in element to construct an appropriate value for element
      */
     onDsrz(element) {
-        const fieldData = element.data[this.name];
+        const fieldData = element.data[this.dataName];
         if (fieldData == undefined) {
             if (this.hasValue(element.value))
                 return;
@@ -227,7 +244,7 @@ export class SrzField {
                 throw new SrzFormatError(`Missing field ${this.name}`);
         }
 
-        processElement(element, this, fieldData);
+        processElementField(element, this, fieldData);
     }
 }
 
@@ -508,7 +525,7 @@ function initializeElement(element, parent, name, srzField, srzClass, data) {
 export class PrimitiveSrzClass extends SrzClass {
     static default = (() => {
         const d = new PrimitiveSrzClass([
-            "undefined",
+            "null",
             "symbol",
             "object",
             "string",
@@ -537,8 +554,13 @@ export class PrimitiveSrzClass extends SrzClass {
         throw new Error('Not supported');
     }
 
+
+    allows(data) {
+        return this._types.indexOf(typeof data) >= 0;
+    }
+
     onDsrz(element) {
-        if (this._types.indexOf(typeof element.data) < 0)
+        if (!this.allows(element.data))
             throw new SrzFormatError("Element was not in list of types");
 
         element.value = element.data;
@@ -546,17 +568,33 @@ export class PrimitiveSrzClass extends SrzClass {
 }
 
 export class ArraySrzClass extends SrzClass {
-    constructor(elementType) {
-        super(Array, {name:`${innerType.name}[]`});
+    constructor(elementType, options = {}) {
+        var optCpy = {};
+        Object.assign(optCpy, options);
+        optCpy.name ??= `${elementType.name}[]`;
+
+        super(Array, optCpy);
         this._elementType = elementType;
+        this._ownsElements = options.ownsElements ?? false;
     }
 
     get elementType() {
         return this._elementType;
     }
 
+    get ownsElements() {
+        return this._ownsElements;
+    }
+
     newEmpty() {
         return [];
+    }
+
+    newClone(serializer, other) {
+        if (this.ownsElements)
+            return other.map(serializer.clone);
+        else
+            return [...other];
     }
 
     onDsrz(element) {
@@ -566,7 +604,9 @@ export class ArraySrzClass extends SrzClass {
         element.initializeDefaultValue();
 
         element.dataKeys.forEach(k => {
-            const v = element.data[k];
+            const d = element.data[k];
+
+            const v = readElementChild(element, this.elementType, d);
 
             element.value[k] = v;
         });
@@ -574,6 +614,29 @@ export class ArraySrzClass extends SrzClass {
 }
 
 
+export class AbstractSrzClass extends SrzClass {
+    constructor(type, options = {}) {
+        super(type, options);
+    }
+
+    newEmpty() {
+        return null;
+    }
+
+    newClone(serializer, source) {
+        const c = serializer.getClassOf(source);
+        if (!c)
+            throw new SrzFormatError(`Unknown type ${source.constructor}`);
+        else if (c instanceof AbstractSrzClass)
+            throw new SrzFormatError(`Cannot create instance of abstract class ${this.type}`);
+
+        return c.newClone(serializer, source);
+    }
+
+    onDsrz(element) {
+        throw new SrzFormatError(`Cannot create instance of abstract class ${this.type}`);
+    }
+}
 
 export class DefaultSrzClass extends SrzClass {
     static default = (() => {
@@ -713,7 +776,7 @@ class RootSrzClass extends SrzClass {
 
 
     #processSingle(parent, data) {
-        const inEl = loadElement(parent, null, data);
+        const inEl = loadElement(parent, null, null, data);
 
         if (!inEl.name)
             throw new SrzFormatError('Missing name on root element');
@@ -723,11 +786,44 @@ class RootSrzClass extends SrzClass {
         addResult(parent.environment, inEl.name, inEl.value);
     }
 
+    #processTopLevelArray(parent, data) {
+        for (var c of data)
+            this.#processSingle(parent, c);
+    }
+
+    #processTopLevel(parent, data) {
+        const values = data['$values'];
+        const value = data['$value'];
+        if ((values ?? value) !== undefined) {
+            const topType = data['$type'];
+            if (topType) {
+                const tt = parent.serializer.getClass(topType);
+                if (!(tt instanceof SrzClass))
+                    throw new SrzFormatError(`Invalid top level type ${topType}`);
+
+                parent.environment.defaultClass = tt;
+            }
+
+            if (values !== undefined && value !== undefined)
+                throw new SrzFormatError(`Top level block may not contain both a \"$values\" and \"$value\" declaration`);
+            else if (Array.isArray(values))
+                this.#processTopLevelArray(parent, values);
+            else if (value !== undefined)
+                this.#processSingle(parent, value);
+            else
+                throw new SrzFormatError(`Top level block had invalid format`);
+
+        } else {
+            this.#processSingle(parent, data);
+        }
+    }
+
+
     onDsrz(el) {
         if (el.data instanceof Array) {
-            el.data.forEach(value => void this.#processSingle(el, value));
+            this.#processTopLevelArray(el, el.data);
         } else if (el.data instanceof Object) {
-            this.#processSingle(el, el.data);
+            this.#processTopLevel(el, el.data);
         } else {
             throw new SrzFormatError('Not supported');
         }
@@ -739,6 +835,10 @@ class RootSrzClass extends SrzClass {
     }
 
     newEmpty() {
+        throw new SrzFormatError('Not supported');
+    }
+
+    newClone(serializer, source) {
         throw new SrzFormatError('Not supported');
     }
 }
@@ -767,53 +867,68 @@ class RootSrzField extends SrzField {
     }
 }
 
-
-function loadElement(parent, field, data) {
+/**
+ * 
+ * @param {SrzElement} parent 
+ * @param {SrzField | null} field 
+ * @param {SrzClass | null} klass 
+ * @param {any} data 
+ * @returns {SrzElement}
+ */
+function loadElement(parent, field, klass, data) {
     const name = data['$name'];
     const typeName = data['$type'];
     const inheritName = data['$inherit'];
-    let type;
     let inherit;
 
-    if (typeName) {
-        type = parent.serializer.getClass(typeName);
+    if (typeName) { // Try to use the type name
+        klass = parent.serializer.getClass(typeName);
     }
 
-    if (inheritName) {
+    if (inheritName) { // If we have an inherit declaration, get our inherited object
         inherit = parent.environment.getValue(inheritName);
+
+        if (inherit === undefined)
+            throw new Error(`No such inheritable value \"${inheritName}\"`);
     }
 
-    if (!type && inherit) {
-        type = parent.serializer.getClassOf(inherit);
+    if (!klass && inherit !== undefined) { // Try using the inherited type
+        klass = parent.serializer.getClassOf(inherit);
     }
 
-    if (!type && field?.fieldClass) {
-        type = field.fieldClass;
+    if (!klass && field?.fieldClass) { // Try using the type of the field
+        klass = field.fieldClass;
     }
 
-    if (!type && parent.isTop && parent.serializer.defaultClass) {
-        type = parent.serializer.defaultClass;
+    if (!klass && parent.isTop && parent.environment.defaultClass) { // If we are at the top level, try using the declared default type
+        klass = parent.environment.defaultClass;
     }
 
-    if (!(type instanceof SrzClass))
+    if (!klass && parent.isTop && parent.serializer.defaultClass) { // If we are at the top level, try using the explicit default type
+        klass = parent.serializer.defaultClass;
+    }
+
+    if (!(klass instanceof SrzClass)) // No valid type could be resolved
         throw new Error("Could not determine element type");
 
     const el = leaseElementPool(parent.environment);
 
     var dataCpy;
-    if (typeof data == 'object') {
+    if (Array.isArray(data)) { // Forward arrays straight
+        dataCpy = data;
+    } else if (typeof data == 'object') { // Remove special names from objects
         dataCpy = {... data};
         delete dataCpy['$name'];
         delete dataCpy['$type'];
         delete dataCpy['$inherit'];
-    } else {
+    } else { // Forward primitives stright
         dataCpy = data;
     }
 
-    initializeElement(el, parent, name, field, type, dataCpy);
+    initializeElement(el, parent, name, field, klass, dataCpy);
     
-    if (inherit) {
-        el.value = type.newClone(parent.serializer, inherit);
+    if (inherit !== undefined) { // If we have an inherit declaration, clone the inherited object
+        el.value = klass.newClone(parent.serializer, inherit);
     }
 
     return el;
@@ -828,6 +943,10 @@ function releaseElement(environment, element) {
     returnElementPool(environment, element);
 }
 
+/**
+ * 
+ * @param {SrzElement} element 
+ */
 export function writeBackElement(element) {
     if (!element.srzField)
         throw new Error("No field associated with element");
@@ -835,8 +954,29 @@ export function writeBackElement(element) {
     element.srzField.setValue(element.parent.value, element.value);
 }
 
-export function processElement(parent, field, data) {
-    const el = loadElement(parent, field, data);
+/**
+ * 
+ * @param {SrzElement} parent 
+ * @param {SrzClass} klass 
+ * @param {any} data 
+ * @returns any
+ */
+function readElementChild(parent, klass, data) {
+    const el = loadElement(parent, null, klass, data);
+    enterElement(el);
+    const value = el.value;
+    releaseElement(el.environment, el);
+    return value;
+}
+
+/**
+ * 
+ * @param {SrzElement} parent 
+ * @param {SrzField | null} field 
+ * @param {any} data 
+ */
+export function processElementField(parent, field, data) {
+    const el = loadElement(parent, field, null, data);
     enterElement(el);
     writeBackElement(el);
     releaseElement(el.environment, el);
